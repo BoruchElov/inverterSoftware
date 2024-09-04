@@ -17,7 +17,7 @@ public class ModbusConnection {
     private boolean running = false;
     private final long scanRate;
 
-    public ModbusConnection(String port, int baudRate, int dataBits, String parity, int stopBits, int interval, int timeout, int retries) {
+    public ModbusConnection(String port, int baudRate, int dataBits, String parity, int stopBits, int interval, int timeout, int retries, int slaveID) {
         // Настройки последовательного порта
         SerialParameters params = new SerialParameters();
         params.setPortName(port);
@@ -34,7 +34,7 @@ public class ModbusConnection {
         modbusMaster.setTimeout(timeout);
         modbusMaster.setRetries(retries);
         scanRate = interval;
-        slaveId = 5; // Укажите идентификатор устройства
+        slaveId = slaveID; // Укажите идентификатор устройства
         startAddress = 0;
         quantityOfRegisters = 60;
     }
@@ -64,21 +64,29 @@ public class ModbusConnection {
             running = false;
         }
     }
-    public void readRegisters() {
-        if (!connected || !running) return;
-        try {
-            InputRegister[] registers;
-            registers = modbusMaster.readMultipleRegisters(slaveId, startAddress, quantityOfRegisters);
-            for (int i = 0; i < registers.length; i++) {
+    public float[] readRegisters() {
+        float[] outputs = new float[6];
+            try {
+                InputRegister[] registers;
+                registers = modbusMaster.readMultipleRegisters(slaveId, startAddress, quantityOfRegisters);
+            /*for (int i = 0; i < registers.length; i++) {
                 if ((i + 1) % 2 != 0) {
                     System.out.println("Registers " + (startAddress + i) + "-" + (startAddress + i + 1) + " = " + (Float.intBitsToFloat(numbersConnector(registers[i + 1].getValue(), registers[i].getValue()))));
                 }
+            }*/
+                outputs[0] = Float.intBitsToFloat(numbersConnector(registers[35].getValue(), registers[34].getValue()));
+                outputs[1] = Float.intBitsToFloat(numbersConnector(registers[37].getValue(), registers[36].getValue()));
+                outputs[2] = Float.intBitsToFloat(numbersConnector(registers[39].getValue(), registers[38].getValue()));
+                outputs[3] = Float.intBitsToFloat(numbersConnector(registers[41].getValue(), registers[40].getValue()));
+                outputs[4] = Float.intBitsToFloat(numbersConnector(registers[43].getValue(), registers[42].getValue()));
+                outputs[5] = Float.intBitsToFloat(numbersConnector(registers[45].getValue(), registers[44].getValue()));
+
+            } catch (ModbusException e) {
+                System.out.println("Ошибка при чтении регистров: " + e.getMessage());
             }
-        } catch (ModbusException e) {
-            System.out.println("Ошибка при чтении регистров: " + e.getMessage());
-        }
+        return outputs;
     }
-    public void startPolling() {
+    public float[] startPolling() {
         new Thread(() -> {
             while (running) {
                 readRegisters();
@@ -89,6 +97,7 @@ public class ModbusConnection {
                 }
             }
         }).start();
+        return readRegisters();
     }
     public void stop() {
         running = false;
@@ -97,5 +106,9 @@ public class ModbusConnection {
     private int numbersConnector(int x, int y) {
         return x | (y << 16);
     }
+    /*public double[] powersCalculator (float VAinV, float VBinV, float VCinV, float IAinA, float IBinA, float ICinA) {
+        float PinW = VAinV * IAinA + VBinV * IBinA + VCinV * ICinA;
+        float QinVAr =
+    }*/
 }
 

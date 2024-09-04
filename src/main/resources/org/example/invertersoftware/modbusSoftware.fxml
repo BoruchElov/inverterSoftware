@@ -13,7 +13,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="597.0" prefWidth="1005.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1">
+<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="597.0" prefWidth="1005.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.invertersoftware.MainController">
   <tabs>
     <Tab text="Получение данных">
       <content>
@@ -27,14 +27,14 @@
                               <Font name="System Bold" size="18.0" />
                            </font>
                         </Text>
-                        <ComboBox layoutX="21.0" layoutY="78.0" prefWidth="150.0" />
+                        <ComboBox fx:id="portComboBox" layoutX="21.0" layoutY="78.0" prefWidth="150.0" />
                         <Text layoutX="29.0" layoutY="70.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Порт подключения">
                            <font>
                               <Font size="15.0" />
                            </font>
                         </Text>
                         <Line endX="219.0" layoutX="162.0" layoutY="46.0" startX="-160.0" strokeWidth="2.0" />
-                        <ComboBox layoutX="22.0" layoutY="207.0" prefWidth="150.0" />
+                        <ComboBox fx:id="baudRateComboBox" layoutX="22.0" layoutY="207.0" prefWidth="150.0" />
                         <Text layoutX="23.0" layoutY="177.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Скорость передачи данных, бит/с" textAlignment="CENTER" wrappingWidth="145.0771484375">
                            <font>
                               <Font size="15.0" />
@@ -45,8 +45,8 @@
                               <Font size="15.0" />
                            </font>
                         </Text>
-                        <ComboBox layoutX="21.0" layoutY="281.0" prefWidth="150.0" />
-                        <ComboBox layoutX="21.0" layoutY="133.0" prefWidth="150.0" />
+                        <ComboBox fx:id="dataBitsComboBox" layoutX="21.0" layoutY="281.0" prefWidth="150.0" />
+                        <ComboBox fx:id="parityComboBox" layoutX="21.0" layoutY="133.0" prefWidth="150.0" />
                         <Text layoutX="41.0" layoutY="125.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Режим контроля">
                            <font>
                               <Font size="15.0" />
@@ -57,40 +57,46 @@
                               <Font size="15.0" />
                            </font>
                         </Text>
-                        <ComboBox layoutX="21.0" layoutY="357.0" prefWidth="150.0" />
-                        <Text layoutX="201.0" layoutY="106.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Интервал между запросами, мс" textAlignment="CENTER" wrappingWidth="145.0771484375">
+                        <ComboBox fx:id="stopBitsComboBox" layoutX="21.0" layoutY="357.0" prefWidth="150.0" />
+                        <Text layoutX="201.0" layoutY="179.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Интервал между запросами, мс" textAlignment="CENTER" wrappingWidth="145.0771484375">
                            <font>
                               <Font size="15.0" />
                            </font>
                         </Text>
-                        <TextField layoutX="199.0" layoutY="134.0" />
-                        <Text layoutX="201.0" layoutY="182.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Время ожидания соединения, мс" textAlignment="CENTER" wrappingWidth="145.0771484375">
+                        <TextField fx:id="intervalTextField" layoutX="199.0" layoutY="207.0" />
+                        <Text layoutX="201.0" layoutY="256.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Время ожидания соединения, мс" textAlignment="CENTER" wrappingWidth="145.0771484375">
                            <font>
                               <Font size="15.0" />
                            </font>
                         </Text>
-                        <TextField layoutX="199.0" layoutY="208.0" />
-                        <Text layoutX="201.0" layoutY="254.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Количество попыток подключения" textAlignment="CENTER" wrappingWidth="145.0771484375">
+                        <TextField fx:id="timeoutTextField" layoutX="199.0" layoutY="282.0" />
+                        <Text layoutX="201.0" layoutY="331.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Количество попыток подключения" textAlignment="CENTER" wrappingWidth="145.0771484375">
                            <font>
                               <Font size="15.0" />
                            </font>
                         </Text>
-                        <TextField layoutX="199.0" layoutY="281.0" />
-                        <Button layoutX="232.0" layoutY="357.0" mnemonicParsing="false" text="Соединение" />
+                        <TextField fx:id="retriesTextField" layoutX="199.0" layoutY="358.0" />
+                        <TextField fx:id="slaveIdentificationNumber" layoutX="199.0" layoutY="133.0" />
+                        <Text layoutX="247.0" layoutY="124.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Slave ID">
+                           <font>
+                              <Font size="15.0" />
+                           </font>
+                        </Text>
+                        <Button fx:id="connectButton" layoutX="232.0" layoutY="78.0" mnemonicParsing="false" onAction="#onConnectButtonClick" text="Соединение" />
                      </children>
                   </AnchorPane>
-                  <TableView layoutX="626.0" layoutY="71.0" prefHeight="60.0" prefWidth="227.0">
+                  <TableView fx:id="currentTable" layoutX="626.0" layoutY="71.0" prefHeight="60.0" prefWidth="227.0">
                     <columns>
-                      <TableColumn prefWidth="75.0" text="IA, A" />
-                      <TableColumn prefWidth="75.0" text="IB, A" />
-                        <TableColumn prefWidth="75.0" text="IC, A" />
+                      <TableColumn fx:id="phaseACurrent" prefWidth="75.0" text="IA, A" />
+                      <TableColumn fx:id="phaseBCurrent" prefWidth="75.0" text="IB, A" />
+                        <TableColumn fx:id="phaseCCurrent" prefWidth="75.0" text="IC, A" />
                     </columns>
                   </TableView>
-                  <TableView layoutX="626.0" layoutY="150.0" prefHeight="60.0" prefWidth="227.0">
+                  <TableView fx:id="voltageTable" layoutX="626.0" layoutY="150.0" prefHeight="60.0" prefWidth="227.0">
                      <columns>
-                        <TableColumn prefWidth="75.0" text="UA, A" />
-                        <TableColumn prefWidth="75.0" text="UB, A" />
-                        <TableColumn prefWidth="75.0" text="UC, A" />
+                        <TableColumn fx:id="phaseAVoltage" prefWidth="75.0" text="UA, В" />
+                        <TableColumn fx:id="phaseBVoltage" prefWidth="75.0" text="UB, В" />
+                        <TableColumn fx:id="phaseCVoltage" prefWidth="75.0" text="UC, В" />
                      </columns>
                   </TableView>
                </children></AnchorPane>
