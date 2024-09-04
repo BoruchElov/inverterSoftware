@@ -10,6 +10,7 @@ module org.example.invertersoftware {
     requires org.kordamp.bootstrapfx.core;
     requires eu.hansolo.tilesfx;
     requires com.almasb.fxgl.all;
+    requires j2mod;
 
     opens org.example.invertersoftware to javafx.fxml;
     exports org.example.invertersoftware;
