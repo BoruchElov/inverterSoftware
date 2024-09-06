@@ -9,6 +9,7 @@ import com.ghgande.j2mod.modbus.ModbusException;
 
 public class ModbusConnection {
 
+    private float[] outputs = new float[6];
     private final ModbusSerialMaster modbusMaster;
     private final int slaveId;
     private final int startAddress;
@@ -65,27 +66,32 @@ public class ModbusConnection {
         }
     }
     public void readRegisters() {
-        //float[] outputs = new float[6];
-            try {
-                InputRegister[] registers;
-                registers = modbusMaster.readMultipleRegisters(slaveId, startAddress, quantityOfRegisters);
+        try {
+            InputRegister[] registers;
+            registers = modbusMaster.readMultipleRegisters(slaveId, startAddress, quantityOfRegisters);
             for (int i = 0; i < registers.length; i++) {
                 if ((i + 1) % 2 != 0) {
-                    System.out.println("Registers " + (startAddress + i) + "-" + (startAddress + i + 1) + " = " + (Float.intBitsToFloat(numbersConnector(registers[i + 1].getValue(), registers[i].getValue()))));
+                    float value = Float.intBitsToFloat(numbersConnector(registers[i + 1].getValue(), registers[i].getValue()));
+                    //System.out.println("Registers " + (startAddress + i) + "-" + (startAddress + i + 1) + " = " + value);
+
+                    // Запись значений в глобальный массив
+                    if (i == 34) outputs[0] = value;  // Пример для регистров 34-35
+                    if (i == 36) outputs[1] = value;  // Пример для регистров 36-37
+                    if (i == 38) outputs[2] = value;  // Пример для регистров 38-39
+                    if (i == 40) outputs[3] = value;  // Пример для регистров 40-41
+                    if (i == 42) outputs[4] = value;  // Пример для регистров 42-43
+                    if (i == 44) outputs[5] = value;  // Пример для регистров 44-45
                 }
             }
-                /*outputs[0] = Float.intBitsToFloat(numbersConnector(registers[35].getValue(), registers[34].getValue()));
-                outputs[1] = Float.intBitsToFloat(numbersConnector(registers[37].getValue(), registers[36].getValue()));
-                outputs[2] = Float.intBitsToFloat(numbersConnector(registers[39].getValue(), registers[38].getValue()));
-                outputs[3] = Float.intBitsToFloat(numbersConnector(registers[41].getValue(), registers[40].getValue()));
-                outputs[4] = Float.intBitsToFloat(numbersConnector(registers[43].getValue(), registers[42].getValue()));
-                outputs[5] = Float.intBitsToFloat(numbersConnector(registers[45].getValue(), registers[44].getValue()));*/
-
-            } catch (ModbusException e) {
-                System.out.println("Ошибка при чтении регистров: " + e.getMessage());
-            }
-        //return outputs;
+        } catch (ModbusException e) {
+            System.out.println("Ошибка при чтении регистров: " + e.getMessage());
+        }
     }
+
+    public float[] getOutputs() {
+        return outputs;
+    }
+
     public void startPolling() {
         new Thread(() -> {
             while (running) {

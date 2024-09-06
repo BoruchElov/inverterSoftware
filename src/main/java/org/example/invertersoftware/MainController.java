@@ -45,6 +45,7 @@ public class MainController {
     private TableColumn<voltages, Float> phaseCVoltage;
     private boolean isRunning = false;
     private ModbusConnection modbusConnection;
+
     @FXML
     public void initialize() {
         phaseACurrent.setCellValueFactory(new PropertyValueFactory<Currents, Float>("IA, А"));
@@ -62,6 +63,7 @@ public class MainController {
         parityComboBox.getItems().addAll("None", "Even", "Odd");
         stopBitsComboBox.getItems().addAll(1, 2);
     }
+
     @FXML
     private void onConnectButtonClick() {
         if (isRunning) {
@@ -70,6 +72,11 @@ public class MainController {
             startProgram();
         }
     }
+    @FXML
+    private void onGetDataButtonClick() {
+        showOutputs();
+    }
+
     private void startProgram() {
         String port = portComboBox.getValue();
         int baudRate = baudRateComboBox.getValue();
@@ -87,6 +94,7 @@ public class MainController {
             isRunning = true;
             connectButton.setText("Отключение");
         }
+
         assert modbusConnection != null;
         /*Currents currents = new Currents(modbusConnection.startPolling()[3],modbusConnection.startPolling()[4], modbusConnection.startPolling()[5]);
         voltages vltgs = new voltages(modbusConnection.startPolling()[0],modbusConnection.startPolling()[1], modbusConnection.startPolling()[2]);
@@ -99,12 +107,23 @@ public class MainController {
         voltagesList.add(vltgs);
         voltageTable.setItems(voltagesList);*/
     }
+
     private void stopProgram() {
         if (modbusConnection != null) {
             modbusConnection.stop();
         }
         isRunning = false;
         connectButton.setText("Соединение");
+    }
+
+    public void displayOutputs() {
+        float[] outputs = modbusConnection.getOutputs();
+        for (int i = 0; i < outputs.length; i++) {
+            System.out.println("Output " + (i + 1) + ": " + outputs[i]);
+        }
+    }
+    public void showOutputs() {
+        displayOutputs();
     }
 }
 
