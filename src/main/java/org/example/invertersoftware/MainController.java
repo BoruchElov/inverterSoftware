@@ -88,7 +88,7 @@ public class MainController {
             connectButton.setText("Отключение");
         }
         assert modbusConnection != null;
-        Currents currents = new Currents(modbusConnection.startPolling()[3],modbusConnection.startPolling()[4], modbusConnection.startPolling()[5]);
+        /*Currents currents = new Currents(modbusConnection.startPolling()[3],modbusConnection.startPolling()[4], modbusConnection.startPolling()[5]);
         voltages vltgs = new voltages(modbusConnection.startPolling()[0],modbusConnection.startPolling()[1], modbusConnection.startPolling()[2]);
 
         ObservableList<Currents> currentsList = currentTable.getItems();
@@ -97,7 +97,7 @@ public class MainController {
 
         ObservableList<voltages> voltagesList = voltageTable.getItems();
         voltagesList.add(vltgs);
-        voltageTable.setItems(voltagesList);
+        voltageTable.setItems(voltagesList);*/
     }
     private void stopProgram() {
         if (modbusConnection != null) {

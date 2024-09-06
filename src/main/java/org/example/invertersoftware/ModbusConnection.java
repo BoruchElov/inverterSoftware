@@ -64,29 +64,29 @@ public class ModbusConnection {
             running = false;
         }
     }
-    public float[] readRegisters() {
-        float[] outputs = new float[6];
+    public void readRegisters() {
+        //float[] outputs = new float[6];
             try {
                 InputRegister[] registers;
                 registers = modbusMaster.readMultipleRegisters(slaveId, startAddress, quantityOfRegisters);
-            /*for (int i = 0; i < registers.length; i++) {
+            for (int i = 0; i < registers.length; i++) {
                 if ((i + 1) % 2 != 0) {
                     System.out.println("Registers " + (startAddress + i) + "-" + (startAddress + i + 1) + " = " + (Float.intBitsToFloat(numbersConnector(registers[i + 1].getValue(), registers[i].getValue()))));
                 }
-            }*/
-                outputs[0] = Float.intBitsToFloat(numbersConnector(registers[35].getValue(), registers[34].getValue()));
+            }
+                /*outputs[0] = Float.intBitsToFloat(numbersConnector(registers[35].getValue(), registers[34].getValue()));
                 outputs[1] = Float.intBitsToFloat(numbersConnector(registers[37].getValue(), registers[36].getValue()));
                 outputs[2] = Float.intBitsToFloat(numbersConnector(registers[39].getValue(), registers[38].getValue()));
                 outputs[3] = Float.intBitsToFloat(numbersConnector(registers[41].getValue(), registers[40].getValue()));
                 outputs[4] = Float.intBitsToFloat(numbersConnector(registers[43].getValue(), registers[42].getValue()));
-                outputs[5] = Float.intBitsToFloat(numbersConnector(registers[45].getValue(), registers[44].getValue()));
+                outputs[5] = Float.intBitsToFloat(numbersConnector(registers[45].getValue(), registers[44].getValue()));*/
 
             } catch (ModbusException e) {
                 System.out.println("Ошибка при чтении регистров: " + e.getMessage());
             }
-        return outputs;
+        //return outputs;
     }
-    public float[] startPolling() {
+    public void startPolling() {
         new Thread(() -> {
             while (running) {
                 readRegisters();
@@ -97,7 +97,7 @@ public class ModbusConnection {
                 }
             }
         }).start();
-        return readRegisters();
+        //return readRegisters();
     }
     public void stop() {
         running = false;
