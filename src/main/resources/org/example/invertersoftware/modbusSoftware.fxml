@@ -99,7 +99,8 @@
                         <TableColumn fx:id="phaseCVoltage" prefWidth="75.0" text="UC, В" />
                      </columns>
                   </TableView>
-                  <Button fx:id="getData" layoutX="503.0" layoutY="235.0" mnemonicParsing="false" onAction="#onGetDataButtonClick" prefHeight="44.0" prefWidth="150.0" text="Получить данные" />
+                  <Button fx:id="getData" layoutX="503.0" layoutY="235.0" mnemonicParsing="false" onAction="#onGetDataButtonClick" prefHeight="34.0" prefWidth="193.0" text="Начать получение данных" />
+                  <Button fx:id="getData1" layoutX="503.0" layoutY="294.0" mnemonicParsing="false" onAction="#onDisconnectButtonClick" prefHeight="34.0" prefWidth="193.0" text="Прекратить получение данных" />
                </children></AnchorPane>
       </content>
     </Tab>

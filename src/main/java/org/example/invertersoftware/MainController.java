@@ -44,7 +44,18 @@ public class MainController {
     @FXML
     private TableColumn<voltages, Float> phaseCVoltage;
     private boolean isRunning = false;
+    private boolean allowedToDisplayData = false;
     private ModbusConnection modbusConnection;
+
+    private String port;
+    private int baudRate;
+    private int dataBits;
+    private String parity;
+    private int stopBits;
+    private int interval;
+    private int timeout;
+    private int retries;
+    private int slaveID;
 
     @FXML
     public void initialize() {
@@ -73,20 +84,34 @@ public class MainController {
         }
     }
     @FXML
+    private void onDisconnectButtonClick() {
+        allowedToDisplayData = false;
+    }
+    @FXML
     private void onGetDataButtonClick() {
-        showOutputs();
+        allowedToDisplayData = true;
+        new Thread(() -> {
+            while (allowedToDisplayData) {
+                displayOutputs();
+                try {
+                    Thread.sleep(interval);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }).start();
     }
 
     private void startProgram() {
-        String port = portComboBox.getValue();
-        int baudRate = baudRateComboBox.getValue();
-        int dataBits = dataBitsComboBox.getValue();
-        String parity = parityComboBox.getValue();
-        int stopBits = stopBitsComboBox.getValue();
-        int interval = Integer.parseInt(intervalTextField.getText());
-        int timeout = Integer.parseInt(timeoutTextField.getText());
-        int retries = Integer.parseInt(retriesTextField.getText());
-        int slaveID = Integer.parseInt(slaveIdentificationNumber.getText());
+        port = portComboBox.getValue();
+        baudRate = baudRateComboBox.getValue();
+        dataBits = dataBitsComboBox.getValue();
+        parity = parityComboBox.getValue();
+        stopBits = stopBitsComboBox.getValue();
+        interval = Integer.parseInt(intervalTextField.getText());
+        timeout = Integer.parseInt(timeoutTextField.getText());
+        retries = Integer.parseInt(retriesTextField.getText());
+        slaveID = Integer.parseInt(slaveIdentificationNumber.getText());
         modbusConnection = new ModbusConnection(port, baudRate, dataBits, parity, stopBits, interval, timeout, retries, slaveID);
         modbusConnection.connect();
         if (modbusConnection != null) {
@@ -94,7 +119,6 @@ public class MainController {
             isRunning = true;
             connectButton.setText("Отключение");
         }
-
         assert modbusConnection != null;
         /*Currents currents = new Currents(modbusConnection.startPolling()[3],modbusConnection.startPolling()[4], modbusConnection.startPolling()[5]);
         voltages vltgs = new voltages(modbusConnection.startPolling()[0],modbusConnection.startPolling()[1], modbusConnection.startPolling()[2]);
@@ -114,6 +138,7 @@ public class MainController {
         }
         isRunning = false;
         connectButton.setText("Соединение");
+        allowedToDisplayData = false;
     }
 
     public void displayOutputs() {
@@ -121,9 +146,6 @@ public class MainController {
         for (int i = 0; i < outputs.length; i++) {
             System.out.println("Output " + (i + 1) + ": " + outputs[i]);
         }
-    }
-    public void showOutputs() {
-        displayOutputs();
     }
 }
 
