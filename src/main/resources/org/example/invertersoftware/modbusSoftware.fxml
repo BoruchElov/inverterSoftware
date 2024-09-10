@@ -87,16 +87,16 @@
                   </AnchorPane>
                   <TableView fx:id="currentsTable" layoutX="626.0" layoutY="71.0" prefHeight="60.0" prefWidth="227.0">
                     <columns>
-                      <TableColumn fx:id="phaseACurrentColumn" prefWidth="75.0" />
-                      <TableColumn fx:id="phaseBCurrentColumn" prefWidth="75.0" />
-                        <TableColumn fx:id="phaseCCurrentColumn" prefWidth="75.0" />
+                      <TableColumn fx:id="phaseACurrentColumn" prefWidth="75.0" text="IA, А" />
+                      <TableColumn fx:id="phaseBCurrentColumn" prefWidth="75.0" text="IB, А" />
+                        <TableColumn fx:id="phaseCCurrentColumn" prefWidth="75.0" text="IC, A" />
                     </columns>
                   </TableView>
                   <TableView fx:id="voltagesTable" layoutX="626.0" layoutY="150.0" prefHeight="60.0" prefWidth="227.0">
                      <columns>
-                        <TableColumn fx:id="phaseAVoltageColumn" prefWidth="75.0" />
-                        <TableColumn fx:id="phaseBVoltageColumn" prefWidth="75.0" />
-                        <TableColumn fx:id="phaseCVoltageColumn" prefWidth="75.0" />
+                        <TableColumn fx:id="phaseAVoltageColumn" prefWidth="75.0" text="UA, В" />
+                        <TableColumn fx:id="phaseBVoltageColumn" prefWidth="75.0" text="UB, В" />
+                        <TableColumn fx:id="phaseCVoltageColumn" prefWidth="75.0" text="UC, В" />
                      </columns>
                   </TableView>
                   <Button fx:id="getData" layoutX="503.0" layoutY="235.0" mnemonicParsing="false" onAction="#onGetDataButtonClick" prefHeight="34.0" prefWidth="193.0" text="Начать получение данных" />

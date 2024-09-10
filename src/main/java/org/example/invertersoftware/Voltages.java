@@ -1,39 +1,39 @@
 package org.example.invertersoftware;
 
 public class Voltages {
-    private float phaseAVoltage;
-    private float phaseBVoltage;
-    private float phaseCVoltage;
+    private float UA;
+    private float UB;
+    private float UC;
 
-    public Voltages(float phaseAVoltage, float phaseBVoltage, float phaseCVoltage) {
-        this.phaseAVoltage = phaseAVoltage;
-        this.phaseBVoltage = phaseBVoltage;
-        this.phaseCVoltage = phaseCVoltage;
+    public Voltages(float UA, float UB, float UC) {
+        this.UA = UA;
+        this.UB = UB;
+        this.UC = UC;
     }
     public Voltages() {
     }
 
-    public float getPhaseAVoltage() {
-        return phaseAVoltage;
+    public float getUA() {
+        return UA;
     }
 
-    public void setPhaseAVoltage(float phaseAVoltage) {
-        this.phaseAVoltage = phaseAVoltage;
+    public void setUA(float UA) {
+        this.UA = UA;
     }
 
-    public float getPhaseBVoltage() {
-        return phaseBVoltage;
+    public float getUB() {
+        return UB;
     }
 
-    public void setPhaseBVoltage(float phaseBVoltage) {
-        this.phaseBVoltage = phaseBVoltage;
+    public void setUB(float UB) {
+        this.UB = UB;
     }
 
-    public float getPhaseCVoltage() {
-        return phaseCVoltage;
+    public float getUC() {
+        return UC;
     }
 
-    public void setPhaseCVoltage(float phaseCVoltage) {
-        this.phaseCVoltage = phaseCVoltage;
+    public void setUC(float UC) {
+        this.UC = UC;
     }
 }

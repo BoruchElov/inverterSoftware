@@ -1,39 +1,39 @@
 package org.example.invertersoftware;
 
 public class Currents {
-    private float phaseACurrent;
-    private float phaseBCurrent;
-    private float phaseCCurrent;
+    private float IA;
+    private float IB;
+    private float IC;
 
-    public Currents(float phaseACurrent, float phaseBCurrent, float phaseCCurrent) {
-        this.phaseACurrent = phaseACurrent;
-        this.phaseBCurrent = phaseBCurrent;
-        this.phaseCCurrent = phaseCCurrent;
+    public Currents(float IA, float IB, float IC) {
+        this.IA = IA;
+        this.IB = IB;
+        this.IC = IC;
     }
     public Currents() {
     }
 
-    public float getPhaseACurrent() {
-        return phaseACurrent;
+    public float getIA() {
+        return IA;
     }
 
-    public void setPhaseACurrent(float phaseACurrent) {
-        this.phaseACurrent = phaseACurrent;
+    public void setIA(float IA) {
+        this.IA = IA;
     }
 
-    public float getPhaseBCurrent() {
-        return phaseBCurrent;
+    public float getIB() {
+        return IB;
     }
 
-    public void setPhaseBCurrent(float phaseBCurrent) {
-        this.phaseBCurrent = phaseBCurrent;
+    public void setIB(float IB) {
+        this.IB = IB;
     }
 
-    public float getPhaseCCurrent() {
-        return phaseCCurrent;
+    public float getIC() {
+        return IC;
     }
 
-    public void setPhaseCCurrent(float phaseCCurrent) {
-        this.phaseCCurrent = phaseCCurrent;
+    public void setIC(float IC) {
+        this.IC = IC;
     }
 }

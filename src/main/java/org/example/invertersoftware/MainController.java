@@ -2,6 +2,7 @@ package org.example.invertersoftware;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -31,6 +32,7 @@ public class MainController {
 
     private ObservableList<Currents> currentsData = FXCollections.observableArrayList();
     private ObservableList<Voltages> voltagesData = FXCollections.observableArrayList();
+
     @FXML
     private TableView<Currents> currentsTable;
     @FXML
@@ -87,7 +89,6 @@ public class MainController {
     private void initialDataForTables () {
         currentsData.add(new Currents(0,0,0));
         voltagesData.add(new Voltages(0,0,0));
-
     }
 
     @FXML
@@ -149,12 +150,15 @@ public class MainController {
     public void displayOutputs() {
         float[] outputs = modbusConnection.getOutputs();
 
+        currentsData.removeLast();
         currentsData.add(new Currents(outputs[3],outputs[4],outputs[5]));
-        voltagesData.add(new Voltages(outputs[0], outputs[1], outputs[2]));
 
+        voltagesData.removeLast();
+        voltagesData.add(new Voltages(outputs[0], outputs[1], outputs[2]));
 
         currentsTable.setItems(currentsData);
         voltagesTable.setItems(voltagesData);
+
 
         for (int i = 0; i < outputs.length; i++) {
             System.out.println("Output " + (i + 1) + ": " + outputs[i]);
