@@ -7,6 +7,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 
 public class MainController {
+
     @FXML
     private ComboBox<String> portComboBox;
     @FXML
@@ -27,22 +28,26 @@ public class MainController {
     private TextField retriesTextField;
     @FXML
     private Button connectButton;
+
+    private ObservableList<Currents> currentsData = FXCollections.observableArrayList();
+    private ObservableList<Voltages> voltagesData = FXCollections.observableArrayList();
     @FXML
-    private TableView<Currents> currentTable;
+    private TableView<Currents> currentsTable;
     @FXML
-    private TableView<voltages> voltageTable;
+    private TableView<Voltages> voltagesTable;
+
     @FXML
-    private TableColumn<Currents, Float> phaseACurrent;
+    private TableColumn<Currents, Float> phaseACurrentColumn;
     @FXML
-    private TableColumn<Currents, Float> phaseBCurrent;
+    private TableColumn<Currents, Float> phaseBCurrentColumn;
     @FXML
-    private TableColumn<Currents, Float> phaseCCurrent;
+    private TableColumn<Currents, Float> phaseCCurrentColumn;
     @FXML
-    private TableColumn<voltages, Float> phaseAVoltage;
+    private TableColumn<Voltages, Float> phaseAVoltageColumn;
     @FXML
-    private TableColumn<voltages, Float> phaseBVoltage;
+    private TableColumn<Voltages, Float> phaseBVoltageColumn;
     @FXML
-    private TableColumn<voltages, Float> phaseCVoltage;
+    private TableColumn<Voltages, Float> phaseCVoltageColumn;
     private boolean isRunning = false;
     private boolean allowedToDisplayData = false;
     private ModbusConnection modbusConnection;
@@ -59,13 +64,18 @@ public class MainController {
 
     @FXML
     public void initialize() {
-        phaseACurrent.setCellValueFactory(new PropertyValueFactory<Currents, Float>("IA, А"));
-        phaseBCurrent.setCellValueFactory(new PropertyValueFactory<Currents, Float>("IB, А"));
-        phaseCCurrent.setCellValueFactory(new PropertyValueFactory<Currents, Float>("IC, А"));
+        initialDataForTables();
 
-        phaseAVoltage.setCellValueFactory(new PropertyValueFactory<voltages, Float>("UA, В"));
-        phaseBVoltage.setCellValueFactory(new PropertyValueFactory<voltages, Float>("UB, В"));
-        phaseCVoltage.setCellValueFactory(new PropertyValueFactory<voltages, Float>("UC, В"));
+        phaseACurrentColumn.setCellValueFactory(new PropertyValueFactory<Currents, Float>("IA"));
+        phaseBCurrentColumn.setCellValueFactory(new PropertyValueFactory<Currents, Float>("IB"));
+        phaseCCurrentColumn.setCellValueFactory(new PropertyValueFactory<Currents, Float>("IC"));
+
+        phaseAVoltageColumn.setCellValueFactory(new PropertyValueFactory<Voltages, Float>("UA"));
+        phaseBVoltageColumn.setCellValueFactory(new PropertyValueFactory<Voltages, Float>("UB"));
+        phaseCVoltageColumn.setCellValueFactory(new PropertyValueFactory<Voltages, Float>("UC"));
+
+        currentsTable.setItems(currentsData);
+        voltagesTable.setItems(voltagesData);
 
         portComboBox.getItems().addAll("COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "COM10",
                 "COM11", "COM12", "COM13", "COM14", "COM15");
@@ -73,6 +83,11 @@ public class MainController {
         dataBitsComboBox.getItems().addAll(7, 8);
         parityComboBox.getItems().addAll("None", "Even", "Odd");
         stopBitsComboBox.getItems().addAll(1, 2);
+    }
+    private void initialDataForTables () {
+        currentsData.add(new Currents(0,0,0));
+        voltagesData.add(new Voltages(0,0,0));
+
     }
 
     @FXML
@@ -120,16 +135,6 @@ public class MainController {
             connectButton.setText("Отключение");
         }
         assert modbusConnection != null;
-        /*Currents currents = new Currents(modbusConnection.startPolling()[3],modbusConnection.startPolling()[4], modbusConnection.startPolling()[5]);
-        voltages vltgs = new voltages(modbusConnection.startPolling()[0],modbusConnection.startPolling()[1], modbusConnection.startPolling()[2]);
-
-        ObservableList<Currents> currentsList = currentTable.getItems();
-        currentsList.add(currents);
-        currentTable.setItems(currentsList);
-
-        ObservableList<voltages> voltagesList = voltageTable.getItems();
-        voltagesList.add(vltgs);
-        voltageTable.setItems(voltagesList);*/
     }
 
     private void stopProgram() {
@@ -143,6 +148,14 @@ public class MainController {
 
     public void displayOutputs() {
         float[] outputs = modbusConnection.getOutputs();
+
+        currentsData.add(new Currents(outputs[3],outputs[4],outputs[5]));
+        voltagesData.add(new Voltages(outputs[0], outputs[1], outputs[2]));
+
+
+        currentsTable.setItems(currentsData);
+        voltagesTable.setItems(voltagesData);
+
         for (int i = 0; i < outputs.length; i++) {
             System.out.println("Output " + (i + 1) + ": " + outputs[i]);
         }

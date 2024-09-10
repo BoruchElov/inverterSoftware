@@ -1,14 +1,16 @@
 package org.example.invertersoftware;
 
-public class voltages {
+public class Voltages {
     private float phaseAVoltage;
     private float phaseBVoltage;
     private float phaseCVoltage;
 
-    public voltages(float phaseAVoltage, float phaseBVoltage, float phaseCVoltage) {
+    public Voltages(float phaseAVoltage, float phaseBVoltage, float phaseCVoltage) {
         this.phaseAVoltage = phaseAVoltage;
         this.phaseBVoltage = phaseBVoltage;
         this.phaseCVoltage = phaseCVoltage;
+    }
+    public Voltages() {
     }
 
     public float getPhaseAVoltage() {

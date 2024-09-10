@@ -85,18 +85,18 @@
                         <Button fx:id="connectButton" layoutX="232.0" layoutY="78.0" mnemonicParsing="false" onAction="#onConnectButtonClick" text="Соединение" />
                      </children>
                   </AnchorPane>
-                  <TableView fx:id="currentTable" layoutX="626.0" layoutY="71.0" prefHeight="60.0" prefWidth="227.0">
+                  <TableView fx:id="currentsTable" layoutX="626.0" layoutY="71.0" prefHeight="60.0" prefWidth="227.0">
                     <columns>
-                      <TableColumn fx:id="phaseACurrent" prefWidth="75.0" text="IA, A" />
-                      <TableColumn fx:id="phaseBCurrent" prefWidth="75.0" text="IB, A" />
-                        <TableColumn fx:id="phaseCCurrent" prefWidth="75.0" text="IC, A" />
+                      <TableColumn fx:id="phaseACurrentColumn" prefWidth="75.0" />
+                      <TableColumn fx:id="phaseBCurrentColumn" prefWidth="75.0" />
+                        <TableColumn fx:id="phaseCCurrentColumn" prefWidth="75.0" />
                     </columns>
                   </TableView>
-                  <TableView fx:id="voltageTable" layoutX="626.0" layoutY="150.0" prefHeight="60.0" prefWidth="227.0">
+                  <TableView fx:id="voltagesTable" layoutX="626.0" layoutY="150.0" prefHeight="60.0" prefWidth="227.0">
                      <columns>
-                        <TableColumn fx:id="phaseAVoltage" prefWidth="75.0" text="UA, В" />
-                        <TableColumn fx:id="phaseBVoltage" prefWidth="75.0" text="UB, В" />
-                        <TableColumn fx:id="phaseCVoltage" prefWidth="75.0" text="UC, В" />
+                        <TableColumn fx:id="phaseAVoltageColumn" prefWidth="75.0" />
+                        <TableColumn fx:id="phaseBVoltageColumn" prefWidth="75.0" />
+                        <TableColumn fx:id="phaseCVoltageColumn" prefWidth="75.0" />
                      </columns>
                   </TableView>
                   <Button fx:id="getData" layoutX="503.0" layoutY="235.0" mnemonicParsing="false" onAction="#onGetDataButtonClick" prefHeight="34.0" prefWidth="193.0" text="Начать получение данных" />

@@ -10,6 +10,8 @@ public class Currents {
         this.phaseBCurrent = phaseBCurrent;
         this.phaseCCurrent = phaseCCurrent;
     }
+    public Currents() {
+    }
 
     public float getPhaseACurrent() {
         return phaseACurrent;
