@@ -7,8 +7,11 @@ import com.ghgande.j2mod.modbus.procimg.InputRegister;
 import com.ghgande.j2mod.modbus.util.SerialParameters;
 import com.ghgande.j2mod.modbus.ModbusException;
 
+import java.util.Objects;
+
 public class ModbusConnection {
 
+    private float[] controlSystemParameters = new float[4];
     private float[] outputs = new float[6];
     private final ModbusSerialMaster modbusMaster;
     private final int slaveId;
@@ -83,6 +86,11 @@ public class ModbusConnection {
                     if (i == 44) outputs[5] = value;  // Пример для регистров 44-45
                 }
             }
+            controlSystemParameters[0] = Float.intBitsToFloat(numbersConnector(registers[25].getValue(), registers[24].getValue()));
+            controlSystemParameters[1] = Float.intBitsToFloat(numbersConnector(registers[27].getValue(), registers[26].getValue()));
+            controlSystemParameters[2] = Float.intBitsToFloat(numbersConnector(registers[31].getValue(), registers[30].getValue()));
+            controlSystemParameters[3] = Float.intBitsToFloat(numbersConnector(registers[33].getValue(), registers[32].getValue()));
+
         } catch (ModbusException e) {
             System.out.println("Ошибка при чтении регистров: " + e.getMessage());
         }
@@ -92,29 +100,38 @@ public class ModbusConnection {
         return outputs;
     }
 
-    public void startPolling() {
-        new Thread(() -> {
-            while (running) {
-                readRegisters();
-                try {
-                    Thread.sleep(scanRate);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
-            }
-        }).start();
-        //return readRegisters();
-    }
     public void stop() {
         running = false;
         disconnect();
     }
+
+    public float showParameterValue(String parameter) {
+        if (Objects.equals(parameter, "Sbase")) {
+            return controlSystemParameters[0];
+        } else if (Objects.equals(parameter, "Vacbase")) {
+            return controlSystemParameters[1];
+        } else if (Objects.equals(parameter, "KpPLL")) {
+            return controlSystemParameters[2];
+        } else if (Objects.equals(parameter, "KiPLL")) {
+            return controlSystemParameters[3];
+        } else {
+            return 0;
+        }
+    }
+
     private int numbersConnector(int x, int y) {
         return x | (y << 16);
     }
-    /*public double[] powersCalculator (float VAinV, float VBinV, float VCinV, float IAinA, float IBinA, float ICinA) {
-        float PinW = VAinV * IAinA + VBinV * IBinA + VCinV * ICinA;
-        float QinVAr =
-    }*/
+
+    public static int[] splitNumber(int originalNumber) {
+        int[] outputValues = new int[2];
+        // Extract the first 5 digits
+        outputValues[0] = Integer.parseInt(String.valueOf(originalNumber).substring(0,5));
+        // Extract the last 5 digits
+        outputValues[1] = Integer.parseInt(String.valueOf(originalNumber).substring(5,10));
+        // Return the two separate integers
+        return outputValues;
+    }
+
 }
 

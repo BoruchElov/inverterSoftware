@@ -12,6 +12,8 @@ public class MainController {
     @FXML
     private ComboBox<String> portComboBox;
     @FXML
+    private ComboBox<String> parametersComboBox;
+    @FXML
     private ComboBox<Integer> baudRateComboBox;
     @FXML
     private ComboBox<Integer> dataBitsComboBox;
@@ -28,7 +30,15 @@ public class MainController {
     @FXML
     private TextField retriesTextField;
     @FXML
+    private TextField actualParameterValue;
+    @FXML
     private Button connectButton;
+    @FXML
+    private Button getData;
+    @FXML
+    private Button stopGettingData;
+    @FXML
+    private Button setNewParameterValue;
 
     private ObservableList<Currents> currentsData = FXCollections.observableArrayList();
     private ObservableList<Voltages> voltagesData = FXCollections.observableArrayList();
@@ -81,6 +91,7 @@ public class MainController {
 
         portComboBox.getItems().addAll("COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "COM10",
                 "COM11", "COM12", "COM13", "COM14", "COM15");
+        parametersComboBox.getItems().addAll("Sbase", "Vacbase", "KpPLL", "KiPLL");
         baudRateComboBox.getItems().addAll(9600, 14400, 19200, 38400, 57600, 115200);
         dataBitsComboBox.getItems().addAll(7, 8);
         parityComboBox.getItems().addAll("None", "Even", "Odd");
@@ -100,14 +111,16 @@ public class MainController {
         }
     }
     @FXML
-    private void onDisconnectButtonClick() {
+    private void onStopDisplayingDataButtonClick() {
         allowedToDisplayData = false;
     }
+
     @FXML
     private void onGetDataButtonClick() {
-        allowedToDisplayData = true;
+        allowedToDisplayData = modbusConnection != null;
         new Thread(() -> {
             while (allowedToDisplayData) {
+                modbusConnection.readRegisters();
                 displayOutputs();
                 try {
                     Thread.sleep(interval);
@@ -116,6 +129,14 @@ public class MainController {
                 }
             }
         }).start();
+    }
+    @FXML
+    private void initialValuesOfParameters() {
+        actualParameterValue.setText(String.valueOf(modbusConnection.showParameterValue(parametersComboBox.getValue())));
+    }
+    @FXML
+    private void onApplyButtonClick() {
+
     }
 
     private void startProgram() {
@@ -131,7 +152,6 @@ public class MainController {
         modbusConnection = new ModbusConnection(port, baudRate, dataBits, parity, stopBits, interval, timeout, retries, slaveID);
         modbusConnection.connect();
         if (modbusConnection != null) {
-            modbusConnection.startPolling();
             isRunning = true;
             connectButton.setText("Отключение");
         }
@@ -158,11 +178,6 @@ public class MainController {
 
         currentsTable.setItems(currentsData);
         voltagesTable.setItems(voltagesData);
-
-
-        for (int i = 0; i < outputs.length; i++) {
-            System.out.println("Output " + (i + 1) + ": " + outputs[i]);
-        }
     }
 }
 
