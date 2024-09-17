@@ -1,5 +1,6 @@
 package org.example.invertersoftware;
 
+import com.ghgande.j2mod.modbus.ModbusException;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -31,6 +32,8 @@ public class MainController {
     private TextField retriesTextField;
     @FXML
     private TextField actualParameterValue;
+    @FXML
+    private TextField newParametervalue;
     @FXML
     private Button connectButton;
     @FXML
@@ -135,8 +138,9 @@ public class MainController {
         actualParameterValue.setText(String.valueOf(modbusConnection.showParameterValue(parametersComboBox.getValue())));
     }
     @FXML
-    private void onApplyButtonClick() {
-
+    private void onApplyButtonClick() throws ModbusException {
+        allowedToDisplayData = false;
+        modbusConnection.setParameters(parametersComboBox.getValue(), slaveID, Float.parseFloat(newParametervalue.getText()));
     }
 
     private void startProgram() {

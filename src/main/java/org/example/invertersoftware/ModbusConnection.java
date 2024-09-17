@@ -4,6 +4,7 @@ import com.ghgande.j2mod.modbus.Modbus;
 import com.ghgande.j2mod.modbus.facade.ModbusSerialMaster;
 import com.ghgande.j2mod.modbus.net.AbstractSerialConnection;
 import com.ghgande.j2mod.modbus.procimg.InputRegister;
+import com.ghgande.j2mod.modbus.procimg.Register;
 import com.ghgande.j2mod.modbus.util.SerialParameters;
 import com.ghgande.j2mod.modbus.ModbusException;
 
@@ -11,6 +12,7 @@ import java.util.Objects;
 
 public class ModbusConnection {
 
+    Register[] registers;
     private float[] controlSystemParameters = new float[4];
     private float[] outputs = new float[6];
     private final ModbusSerialMaster modbusMaster;
@@ -70,7 +72,6 @@ public class ModbusConnection {
     }
     public void readRegisters() {
         try {
-            InputRegister[] registers;
             registers = modbusMaster.readMultipleRegisters(slaveId, startAddress, quantityOfRegisters);
             for (int i = 0; i < registers.length; i++) {
                 if ((i + 1) % 2 != 0) {
@@ -94,6 +95,19 @@ public class ModbusConnection {
         } catch (ModbusException e) {
             System.out.println("Ошибка при чтении регистров: " + e.getMessage());
         }
+    }
+    public void setParameters(String parameter, int slaveId, float refValue) throws ModbusException {
+        if (Objects.equals(parameter, "Sbase")) {
+            modbusMaster.writeSingleRegister(slaveId, splitNumber(refValue)[0], registers[24]);
+            modbusMaster.writeSingleRegister(slaveId, splitNumber(refValue)[1], registers[25]);
+        } else if (Objects.equals(parameter, "Vacbase")) {
+
+        } else if (Objects.equals(parameter, "KpPLL")) {
+
+        } else if (Objects.equals(parameter, "KiPLL")) {
+
+        }
+
     }
 
     public float[] getOutputs() {
@@ -123,12 +137,12 @@ public class ModbusConnection {
         return x | (y << 16);
     }
 
-    public static int[] splitNumber(int originalNumber) {
+    public static int[] splitNumber(float originalFloatNumber) {
         int[] outputValues = new int[2];
         // Extract the first 5 digits
-        outputValues[0] = Integer.parseInt(String.valueOf(originalNumber).substring(0,5));
+        outputValues[0] = Integer.parseInt(String.valueOf(Float.floatToIntBits(originalFloatNumber)).substring(0,5));
         // Extract the last 5 digits
-        outputValues[1] = Integer.parseInt(String.valueOf(originalNumber).substring(5,10));
+        outputValues[1] = Integer.parseInt(String.valueOf(Float.floatToIntBits(originalFloatNumber)).substring(5,10));
         // Return the two separate integers
         return outputValues;
     }
