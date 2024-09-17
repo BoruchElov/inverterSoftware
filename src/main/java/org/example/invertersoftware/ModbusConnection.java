@@ -11,8 +11,8 @@ import com.ghgande.j2mod.modbus.ModbusException;
 import java.util.Objects;
 
 public class ModbusConnection {
-
-    Register[] registers;
+    Register[] storingRegisters;
+    InputRegister[] registers;
     private float[] controlSystemParameters = new float[4];
     private float[] outputs = new float[6];
     private final ModbusSerialMaster modbusMaster;
@@ -44,7 +44,7 @@ public class ModbusConnection {
         startAddress = 0;
         quantityOfRegisters = 60;
     }
-    public void connect() {
+    public void connect() throws ModbusException {
         try {
             modbusMaster.connect();
             connected = true;
@@ -56,6 +56,7 @@ public class ModbusConnection {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        createRegistersObject();
     }
     public void disconnect() {
         try {
@@ -69,6 +70,9 @@ public class ModbusConnection {
             connected = false;
             running = false;
         }
+    }
+    public void createRegistersObject() throws ModbusException {
+        storingRegisters = modbusMaster.readMultipleRegisters(slaveId, startAddress, quantityOfRegisters);
     }
     public void readRegisters() {
         try {
@@ -96,18 +100,22 @@ public class ModbusConnection {
             System.out.println("Ошибка при чтении регистров: " + e.getMessage());
         }
     }
-    public void setParameters(String parameter, int slaveId, float refValue) throws ModbusException {
-        if (Objects.equals(parameter, "Sbase")) {
-            modbusMaster.writeSingleRegister(slaveId, splitNumber(refValue)[0], registers[24]);
-            modbusMaster.writeSingleRegister(slaveId, splitNumber(refValue)[1], registers[25]);
-        } else if (Objects.equals(parameter, "Vacbase")) {
+    public void writeRegisters(int slave, int offset, String option, float setValue) throws ModbusException {
 
-        } else if (Objects.equals(parameter, "KpPLL")) {
-
-        } else if (Objects.equals(parameter, "KiPLL")) {
-
+        if (Objects.equals(option, "Sbase")) {
+            storingRegisters[25].setValue(splitNumber(setValue)[1]);
+            storingRegisters[24].setValue(splitNumber(setValue)[0]);
+        } else if (Objects.equals(option, "Vacbase")) {
+            storingRegisters[27].setValue(splitNumber(setValue)[1]);
+            storingRegisters[26].setValue(splitNumber(setValue)[0]);
+        } else if (Objects.equals(option, "KpPLL")) {
+            storingRegisters[31].setValue(splitNumber(setValue)[1]);
+            storingRegisters[30].setValue(splitNumber(setValue)[0]);
+        } else if (Objects.equals(option, "KiPLL")) {
+            storingRegisters[33].setValue(splitNumber(setValue)[1]);
+            storingRegisters[32].setValue(splitNumber(setValue)[0]);
         }
-
+        modbusMaster.writeMultipleRegisters(slave, offset, storingRegisters);
     }
 
     public float[] getOutputs() {

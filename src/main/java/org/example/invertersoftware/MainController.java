@@ -106,7 +106,7 @@ public class MainController {
     }
 
     @FXML
-    private void onConnectButtonClick() {
+    private void onConnectButtonClick() throws ModbusException {
         if (isRunning) {
             stopProgram();
         } else {
@@ -140,10 +140,11 @@ public class MainController {
     @FXML
     private void onApplyButtonClick() throws ModbusException {
         allowedToDisplayData = false;
-        modbusConnection.setParameters(parametersComboBox.getValue(), slaveID, Float.parseFloat(newParametervalue.getText()));
+        modbusConnection.writeRegisters(slaveID, 0, parametersComboBox.getValue(), Float.parseFloat(newParametervalue.getText()));
     }
 
-    private void startProgram() {
+    private void startProgram() throws ModbusException {
+
         port = portComboBox.getValue();
         baudRate = baudRateComboBox.getValue();
         dataBits = dataBitsComboBox.getValue();
