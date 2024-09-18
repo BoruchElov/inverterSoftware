@@ -157,11 +157,8 @@ public class ModbusConnection {
 
     public static int[] splitNumber(float originalFloatNumber) {
         int[] outputValues = new int[2];
-        // Extract the first 5 digits
         outputValues[0] = Float.floatToIntBits(originalFloatNumber) >> 16;
-        // Extract the last 5 digits
         outputValues[1] = Float.floatToIntBits(originalFloatNumber) & 0xFFFF;
-        // Return the two separate integers
         return outputValues;
     }
 

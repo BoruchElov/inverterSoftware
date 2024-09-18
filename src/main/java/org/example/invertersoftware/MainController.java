@@ -1,6 +1,7 @@
 package org.example.invertersoftware;
 
 import com.ghgande.j2mod.modbus.ModbusException;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.Event;
@@ -17,7 +18,7 @@ public class MainController {
 
 
     @FXML
-    private LineChart<?, ?> currentChart;
+    private LineChart<String, Number> currentChart;
 
     @FXML
     private CategoryAxis currentChartXAxis;
@@ -103,10 +104,11 @@ public class MainController {
      */
     @FXML
     public void initialize() {
+        currentChart.setCreateSymbols(false);
+
         currentTime = 0;
         currentSeries = new XYChart.Series();
 
-        //initialDataForTables();
         currentsTable.setFocusTraversable(false);
         currentsTable.addEventFilter(MouseEvent.ANY, Event::consume);
 
@@ -164,7 +166,12 @@ public class MainController {
      */
     @FXML
     private void onGetDataButtonClick() {
+        currentSeries.getData().clear();
+        currentChart.getData().clear();
         allowedToDisplayData = modbusConnection != null;
+        if (!currentChart.getData().contains(currentSeries)) {
+            currentChart.getData().add(currentSeries);
+        }
         new Thread(() -> {
             while (allowedToDisplayData) {
                 modbusConnection.readRegisters();
@@ -174,6 +181,11 @@ public class MainController {
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
+                Platform.runLater(() -> {
+                    //currentSeries.getData().add(new XYChart.Data<>(Float.toString(currentTime), outputs[3]));
+                    currentSeries.getData().add(new XYChart.Data<>(String.format("%.3f",currentTime), outputs[3]));
+                    //currentSeries.getData().removeLast();
+                });
             }
         }).start();
     }
