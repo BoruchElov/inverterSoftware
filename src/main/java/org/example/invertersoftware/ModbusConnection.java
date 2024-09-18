@@ -74,6 +74,16 @@ public class ModbusConnection {
     public void createRegistersObject() throws ModbusException {
         storingRegisters = modbusMaster.readMultipleRegisters(slaveId, startAddress, quantityOfRegisters);
     }
+
+    public void updateControlSystemParameters() throws ModbusException {
+        registers = modbusMaster.readMultipleRegisters(slaveId, startAddress, quantityOfRegisters);
+
+        controlSystemParameters[0] = Float.intBitsToFloat(numbersConnector(registers[25].getValue(), registers[24].getValue()));
+        controlSystemParameters[1] = Float.intBitsToFloat(numbersConnector(registers[27].getValue(), registers[26].getValue()));
+        controlSystemParameters[2] = Float.intBitsToFloat(numbersConnector(registers[31].getValue(), registers[30].getValue()));
+        controlSystemParameters[3] = Float.intBitsToFloat(numbersConnector(registers[33].getValue(), registers[32].getValue()));
+    }
+
     public void readRegisters() {
         try {
             registers = modbusMaster.readMultipleRegisters(slaveId, startAddress, quantityOfRegisters);

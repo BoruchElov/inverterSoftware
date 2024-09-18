@@ -3,15 +3,27 @@ package org.example.invertersoftware;
 import com.ghgande.j2mod.modbus.ModbusException;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.FilteredList;
 import javafx.event.Event;
 import javafx.fxml.FXML;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 
 public class MainController {
 
+
+    @FXML
+    private LineChart<?, ?> currentChart;
+
+    @FXML
+    private CategoryAxis currentChartXAxis;
+
+    @FXML
+    private NumberAxis currentChartYAxis;
     @FXML
     private ComboBox<String> portComboBox;
     @FXML
@@ -48,6 +60,9 @@ public class MainController {
     private ObservableList<Currents> currentsData = FXCollections.observableArrayList();
     private ObservableList<Voltages> voltagesData = FXCollections.observableArrayList();
 
+    private float currentTime;
+    float[] outputs;
+
     @FXML
     private TableView<Currents> currentsTable;
     @FXML
@@ -65,6 +80,9 @@ public class MainController {
     private TableColumn<Voltages, Float> phaseBVoltageColumn;
     @FXML
     private TableColumn<Voltages, Float> phaseCVoltageColumn;
+
+    private XYChart.Series currentSeries;
+
     private boolean isRunning = false;
     private boolean allowedToDisplayData = false;
     private ModbusConnection modbusConnection;
@@ -79,9 +97,16 @@ public class MainController {
     private int retries;
     private int slaveID;
 
+
+    /**
+     * Method initialized() is used for initialization of some variables values and all the interface elements
+     */
     @FXML
     public void initialize() {
-        initialDataForTables();
+        currentTime = 0;
+        currentSeries = new XYChart.Series();
+
+        //initialDataForTables();
         currentsTable.setFocusTraversable(false);
         currentsTable.addEventFilter(MouseEvent.ANY, Event::consume);
 
@@ -106,25 +131,37 @@ public class MainController {
         dataBitsComboBox.getItems().addAll(7, 8);
         parityComboBox.getItems().addAll("None", "Even", "Odd");
         stopBitsComboBox.getItems().addAll(1, 2);
-    }
-    private void initialDataForTables () {
         currentsData.add(new Currents(0,0,0));
         voltagesData.add(new Voltages(0,0,0));
     }
 
+    /**
+     * ACTION METHODS AREA STARTS FROM HERE.
+     *
+     * Method onConnectButtonClick() is called when user presses on the connection button.
+     *
+     * In this method variable referring to the connection time is reset. This method also starts application if it is
+     * not running or stops in other case.
+     *
+     */
     @FXML
     private void onConnectButtonClick() throws ModbusException {
+        currentTime = 0;
         if (isRunning) {
             stopProgram();
         } else {
             startProgram();
         }
     }
-    @FXML
-    private void onStopDisplayingDataButtonClick() {
-        allowedToDisplayData = false;
-    }
 
+    /**
+     * Method onGetDataButtonClick() gets data from controller via Thread.
+     * At first, it checks if there is a connection, so it possible to obtain data.
+     * If it is, method sends requests to the controller for reading holding registers, gets the response and displays it
+     * in the tables using the method displayOutputs().
+     *
+     * If there is no connection method throws an exception.
+     */
     @FXML
     private void onGetDataButtonClick() {
         allowedToDisplayData = modbusConnection != null;
@@ -140,16 +177,40 @@ public class MainController {
             }
         }).start();
     }
+
+    /**
+     * Method onStopDisplayingDataButtonClick() sets the variable allowedToDisplayData value to false, so it stops the
+     * Thread of obtaining data.
+     */
+
     @FXML
-    private void initialValuesOfParameters() {
-        actualParameterValue.setText(String.valueOf(modbusConnection.showParameterValue(parametersComboBox.getValue())));
+    private void onStopDisplayingDataButtonClick() {
+        allowedToDisplayData = false;
     }
+
+    /**
+     * Method onApplyButtonClick() sends the request for changing the values of some of holding registers. To avoid
+     * possible conflicts this method at first stops the thread of obtaining data from controller. Then it sends the
+     * request. Constructor for this request contains the ID of slave device, offset value for registers and the value
+     * that is set by user. After that actual values of control system parameters get updated using the method
+     * updateControlSystemParameters() from ModbusConnection class and get shown using the
+     * method initialValuesOfParameters()
+     *
+     */
+
     @FXML
     private void onApplyButtonClick() throws ModbusException {
         allowedToDisplayData = false;
         modbusConnection.writeRegisters(slaveID, 0, parametersComboBox.getValue(), Float.parseFloat(newParametervalue.getText()));
+        modbusConnection.updateControlSystemParameters();
         initialValuesOfParameters();
     }
+
+    @FXML
+    private void initialValuesOfParameters() {
+        actualParameterValue.setText(String.valueOf(modbusConnection.showParameterValue(parametersComboBox.getValue())));
+    }
+
 
     private void startProgram() throws ModbusException {
 
@@ -181,7 +242,8 @@ public class MainController {
     }
 
     public void displayOutputs() {
-        float[] outputs = modbusConnection.getOutputs();
+        outputs = modbusConnection.getOutputs();
+        currentTime += interval * 0.001f;
 
         currentsData.removeLast();
         currentsData.add(new Currents(outputs[3],outputs[4],outputs[5]));
