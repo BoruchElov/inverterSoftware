@@ -12,6 +12,7 @@ public class mainClass extends Application {
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(mainClass.class.getResource("modbusSoftware.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 1200, 600);
+        stage.setResizable(false);
         stage.setTitle("Hello!");
         stage.setScene(scene);
         stage.show();

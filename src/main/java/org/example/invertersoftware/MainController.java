@@ -4,9 +4,11 @@ import com.ghgande.j2mod.modbus.ModbusException;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.MouseEvent;
 
 public class MainController {
 
@@ -80,6 +82,11 @@ public class MainController {
     @FXML
     public void initialize() {
         initialDataForTables();
+        currentsTable.setFocusTraversable(false);
+        currentsTable.addEventFilter(MouseEvent.ANY, Event::consume);
+
+        voltagesTable.setFocusTraversable(false);
+        voltagesTable.addEventFilter(MouseEvent.ANY, Event::consume);
 
         phaseACurrentColumn.setCellValueFactory(new PropertyValueFactory<Currents, Float>("IA"));
         phaseBCurrentColumn.setCellValueFactory(new PropertyValueFactory<Currents, Float>("IB"));
@@ -141,6 +148,7 @@ public class MainController {
     private void onApplyButtonClick() throws ModbusException {
         allowedToDisplayData = false;
         modbusConnection.writeRegisters(slaveID, 0, parametersComboBox.getValue(), Float.parseFloat(newParametervalue.getText()));
+        initialValuesOfParameters();
     }
 
     private void startProgram() throws ModbusException {
