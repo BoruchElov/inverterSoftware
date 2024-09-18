@@ -136,7 +136,7 @@ public class MainController {
     }
 
     /**
-     * ACTION METHODS AREA STARTS FROM HERE.
+     *
      *
      * Method onConnectButtonClick() is called when user presses on the connection button.
      *
@@ -206,12 +206,21 @@ public class MainController {
         initialValuesOfParameters();
     }
 
+    /**
+     * Method initialValuesOfParameters() sets text to the text field that shows actual value of the parameter chosen
+     * by user
+     */
     @FXML
     private void initialValuesOfParameters() {
         actualParameterValue.setText(String.valueOf(modbusConnection.showParameterValue(parametersComboBox.getValue())));
     }
 
-
+    /**
+     * Method startProgram() gets the data from the text fields and sets the values of the connection parameters.
+     * It also sends a request for connection, sets the status of application as "Running" and changes the text of
+     * connection button from "Connect" to "Disconnect", so it can be used for both connection and disconnection
+     *
+     */
     private void startProgram() throws ModbusException {
 
         port = portComboBox.getValue();
@@ -232,6 +241,9 @@ public class MainController {
         assert modbusConnection != null;
     }
 
+    /**
+     * Method stopProgram() works reversely to the method startProgram()
+     */
     private void stopProgram() {
         if (modbusConnection != null) {
             modbusConnection.stop();
@@ -240,6 +252,10 @@ public class MainController {
         connectButton.setText("Соединение");
         allowedToDisplayData = false;
     }
+
+    /**
+     * Method displayOutputs() gets the value obtained through readMultipleRegisters request and puts it in the tables
+     */
 
     public void displayOutputs() {
         outputs = modbusConnection.getOutputs();
