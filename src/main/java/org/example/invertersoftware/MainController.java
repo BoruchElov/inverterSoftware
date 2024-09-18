@@ -19,12 +19,20 @@ public class MainController {
 
     @FXML
     private LineChart<String, Number> currentChart;
+    @FXML
+    private LineChart<String, Number> voltageChart;
 
     @FXML
     private CategoryAxis currentChartXAxis;
 
     @FXML
     private NumberAxis currentChartYAxis;
+
+    @FXML
+    private CategoryAxis voltageChartXAxis;
+
+    @FXML
+    private NumberAxis voltageChartYAxis;
     @FXML
     private ComboBox<String> portComboBox;
     @FXML
@@ -82,7 +90,14 @@ public class MainController {
     @FXML
     private TableColumn<Voltages, Float> phaseCVoltageColumn;
 
-    private XYChart.Series currentSeries;
+    private XYChart.Series currentPhaseASeries;
+    private XYChart.Series currentPhaseBSeries;
+    private XYChart.Series currentPhaseCSeries;
+
+    private XYChart.Series voltagePhaseASeries;
+    private XYChart.Series voltagePhaseBSeries;
+    private XYChart.Series voltagePhaseCSeries;
+
 
     private boolean isRunning = false;
     private boolean allowedToDisplayData = false;
@@ -105,9 +120,22 @@ public class MainController {
     @FXML
     public void initialize() {
         currentChart.setCreateSymbols(false);
+        currentChart.getXAxis().setAnimated(false);
+        currentChart.getYAxis().setAnimated(false);
+
+        voltageChart.setCreateSymbols(false);
+        voltageChart.getXAxis().setAnimated(false);
+        voltageChart.getYAxis().setAnimated(false);
 
         currentTime = 0;
-        currentSeries = new XYChart.Series();
+        
+        currentPhaseASeries = new XYChart.Series();
+        currentPhaseBSeries = new XYChart.Series();
+        currentPhaseCSeries = new XYChart.Series();
+
+        voltagePhaseASeries = new XYChart.Series();
+        voltagePhaseBSeries = new XYChart.Series();
+        voltagePhaseCSeries = new XYChart.Series();
 
         currentsTable.setFocusTraversable(false);
         currentsTable.addEventFilter(MouseEvent.ANY, Event::consume);
@@ -166,11 +194,26 @@ public class MainController {
      */
     @FXML
     private void onGetDataButtonClick() {
-        currentSeries.getData().clear();
-        currentChart.getData().clear();
+        currentTime = 0;
+        
         allowedToDisplayData = modbusConnection != null;
-        if (!currentChart.getData().contains(currentSeries)) {
-            currentChart.getData().add(currentSeries);
+        if (!currentChart.getData().contains(currentPhaseASeries)) {
+            currentChart.getData().add(currentPhaseASeries);
+        }
+        if (!currentChart.getData().contains(currentPhaseBSeries)) {
+            currentChart.getData().add(currentPhaseBSeries);
+        }
+        if (!currentChart.getData().contains(currentPhaseCSeries)) {
+            currentChart.getData().add(currentPhaseCSeries);
+        }
+        if (!voltageChart.getData().contains(voltagePhaseASeries)) {
+            voltageChart.getData().add(voltagePhaseASeries);
+        }
+        if (!voltageChart.getData().contains(voltagePhaseBSeries)) {
+            voltageChart.getData().add(voltagePhaseBSeries);
+        }
+        if (!voltageChart.getData().contains(voltagePhaseCSeries)) {
+            voltageChart.getData().add(voltagePhaseCSeries);
         }
         new Thread(() -> {
             while (allowedToDisplayData) {
@@ -182,9 +225,14 @@ public class MainController {
                     Thread.currentThread().interrupt();
                 }
                 Platform.runLater(() -> {
-                    //currentSeries.getData().add(new XYChart.Data<>(Float.toString(currentTime), outputs[3]));
-                    currentSeries.getData().add(new XYChart.Data<>(String.format("%.3f",currentTime), outputs[3]));
-                    //currentSeries.getData().removeLast();
+                    voltagePhaseASeries.getData().add(new XYChart.Data<>(String.format("%.3f",currentTime), outputs[0]));
+                    voltagePhaseBSeries.getData().add(new XYChart.Data<>(String.format("%.3f",currentTime), outputs[1]));
+                    voltagePhaseCSeries.getData().add(new XYChart.Data<>(String.format("%.3f",currentTime), outputs[2]));
+
+                    currentPhaseASeries.getData().add(new XYChart.Data<>(String.format("%.3f",currentTime), outputs[3]));
+                    currentPhaseBSeries.getData().add(new XYChart.Data<>(String.format("%.3f",currentTime), outputs[4]));
+                    currentPhaseCSeries.getData().add(new XYChart.Data<>(String.format("%.3f",currentTime), outputs[5]));
+
                 });
             }
         }).start();
@@ -197,6 +245,16 @@ public class MainController {
 
     @FXML
     private void onStopDisplayingDataButtonClick() {
+        currentPhaseASeries.getData().clear();
+        currentPhaseBSeries.getData().clear();
+        currentPhaseCSeries.getData().clear();
+        currentChart.getData().clear();
+
+        voltagePhaseASeries.getData().clear();
+        voltagePhaseBSeries.getData().clear();
+        voltagePhaseCSeries.getData().clear();
+        voltageChart.getData().clear();
+
         allowedToDisplayData = false;
     }
 
@@ -212,9 +270,11 @@ public class MainController {
 
     @FXML
     private void onApplyButtonClick() throws ModbusException {
-        allowedToDisplayData = false;
+        onStopDisplayingDataButtonClick();
+
         modbusConnection.writeRegisters(slaveID, 0, parametersComboBox.getValue(), Float.parseFloat(newParametervalue.getText()));
         modbusConnection.updateControlSystemParameters();
+
         initialValuesOfParameters();
     }
 
