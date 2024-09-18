@@ -233,6 +233,7 @@ public class MainController {
                     currentPhaseBSeries.getData().add(new XYChart.Data<>(String.format("%.3f",currentTime), outputs[4]));
                     currentPhaseCSeries.getData().add(new XYChart.Data<>(String.format("%.3f",currentTime), outputs[5]));
 
+
                 });
             }
         }).start();
