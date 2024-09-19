@@ -235,22 +235,22 @@ public class MainController {
                     currentPhaseCSeries.getData().add(new XYChart.Data<>(String.format("%.3f",currentTime), outputs[5]));
 
                     // Check if the series size exceeds 500 points
-                    if (voltagePhaseASeries.getData().size() > 500) {
+                    if (voltagePhaseASeries.getData().size() > 100) {
                         voltagePhaseASeries.getData().remove(0);
                     }
-                    if (voltagePhaseBSeries.getData().size() > 500) {
+                    if (voltagePhaseBSeries.getData().size() > 100) {
                         voltagePhaseBSeries.getData().remove(0);
                     }
-                    if (voltagePhaseCSeries.getData().size() > 500) {
+                    if (voltagePhaseCSeries.getData().size() > 100) {
                         voltagePhaseCSeries.getData().remove(0);
                     }
-                    if (currentPhaseASeries.getData().size() > 500) {
+                    if (currentPhaseASeries.getData().size() > 100) {
                         currentPhaseASeries.getData().remove(0);
                     }
-                    if (currentPhaseBSeries.getData().size() > 500) {
+                    if (currentPhaseBSeries.getData().size() > 100) {
                         currentPhaseBSeries.getData().remove(0);
                     }
-                    if (currentPhaseCSeries.getData().size() > 500) {
+                    if (currentPhaseCSeries.getData().size() > 100) {
                         currentPhaseCSeries.getData().remove(0);
                     }
                 });
@@ -269,11 +269,13 @@ public class MainController {
         currentPhaseBSeries.getData().clear();
         currentPhaseCSeries.getData().clear();
         currentChart.getData().clear();
+        currentChartXAxis.getCategories().clear();
 
         voltagePhaseASeries.getData().clear();
         voltagePhaseBSeries.getData().clear();
         voltagePhaseCSeries.getData().clear();
         voltageChart.getData().clear();
+        voltageChartXAxis.getCategories().clear();
 
         allowedToDisplayData = false;
     }
