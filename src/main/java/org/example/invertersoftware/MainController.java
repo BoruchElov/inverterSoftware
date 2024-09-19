@@ -225,6 +225,7 @@ public class MainController {
                     Thread.currentThread().interrupt();
                 }
                 Platform.runLater(() -> {
+                    
                     voltagePhaseASeries.getData().add(new XYChart.Data<>(String.format("%.3f",currentTime), outputs[0]));
                     voltagePhaseBSeries.getData().add(new XYChart.Data<>(String.format("%.3f",currentTime), outputs[1]));
                     voltagePhaseCSeries.getData().add(new XYChart.Data<>(String.format("%.3f",currentTime), outputs[2]));
@@ -233,7 +234,25 @@ public class MainController {
                     currentPhaseBSeries.getData().add(new XYChart.Data<>(String.format("%.3f",currentTime), outputs[4]));
                     currentPhaseCSeries.getData().add(new XYChart.Data<>(String.format("%.3f",currentTime), outputs[5]));
 
-
+                    // Check if the series size exceeds 500 points
+                    if (voltagePhaseASeries.getData().size() > 500) {
+                        voltagePhaseASeries.getData().remove(0);
+                    }
+                    if (voltagePhaseBSeries.getData().size() > 500) {
+                        voltagePhaseBSeries.getData().remove(0);
+                    }
+                    if (voltagePhaseCSeries.getData().size() > 500) {
+                        voltagePhaseCSeries.getData().remove(0);
+                    }
+                    if (currentPhaseASeries.getData().size() > 500) {
+                        currentPhaseASeries.getData().remove(0);
+                    }
+                    if (currentPhaseBSeries.getData().size() > 500) {
+                        currentPhaseBSeries.getData().remove(0);
+                    }
+                    if (currentPhaseCSeries.getData().size() > 500) {
+                        currentPhaseCSeries.getData().remove(0);
+                    }
                 });
             }
         }).start();
