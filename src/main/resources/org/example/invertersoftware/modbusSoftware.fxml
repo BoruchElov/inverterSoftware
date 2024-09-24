@@ -5,6 +5,7 @@
 <?import javafx.scene.chart.NumberAxis?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Slider?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TableColumn?>
@@ -16,11 +17,11 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="827.0" prefWidth="1178.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.invertersoftware.MainController">
+<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="867.0" prefWidth="1520.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.invertersoftware.MainController">
   <tabs>
     <Tab text="Взаимодействие с контроллером">
       <content>
-        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="660.0" prefWidth="1179.0">
+        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="838.0" prefWidth="1190.0">
                <children>
                   <AnchorPane layoutX="61.0" layoutY="25.0" prefHeight="402.0" prefWidth="309.0">
                      <children>
@@ -145,16 +146,16 @@
                         </Text>
                      </children>
                   </AnchorPane>
-                  <AnchorPane layoutX="61.0" layoutY="458.0" prefHeight="311.0" prefWidth="522.0">
+                  <AnchorPane layoutX="61.0" layoutY="458.0" prefHeight="348.0" prefWidth="678.0">
                      <children>
-                        <Rectangle arcHeight="5.0" arcWidth="6.0" fill="#e3e7eb" height="311.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="2.0" width="524.0" />
-                        <Text layoutX="229.0" layoutY="27.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Токи, А">
+                        <Rectangle arcHeight="5.0" arcWidth="6.0" fill="#e3e7eb" height="348.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="2.0" width="679.0" />
+                        <Text layoutX="308.0" layoutY="28.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Токи, А">
                            <font>
                               <Font name="System Bold" size="18.0" />
                            </font>
                         </Text>
-                        <Line endX="360.5" layoutX="162.0" layoutY="46.0" startX="-160.0" strokeWidth="2.0" />
-                        <LineChart fx:id="currentChart" layoutX="11.0" layoutY="55.0" legendVisible="false" prefHeight="255.0" prefWidth="493.0">
+                        <Line endX="515.5" layoutX="162.0" layoutY="46.0" startX="-160.0" strokeWidth="2.0" />
+                        <LineChart fx:id="currentChart" layoutX="11.0" layoutY="55.0" legendVisible="false" prefHeight="255.0" prefWidth="656.0">
                           <xAxis>
                             <CategoryAxis fx:id="currentChartXAxis" side="BOTTOM" />
                           </xAxis>
@@ -162,18 +163,43 @@
                             <NumberAxis fx:id="currentChartYAxis" side="LEFT" />
                           </yAxis>
                         </LineChart>
+                        <Slider fx:id="currentsChartSlider" layoutX="52.0" layoutY="319.0" prefHeight="14.0" prefWidth="604.0" />
                      </children>
                   </AnchorPane>
-                  <AnchorPane layoutX="590.0" layoutY="458.0" prefHeight="311.0" prefWidth="517.0">
+                  <AnchorPane layoutX="1157.0" layoutY="25.0" prefHeight="403.0" prefWidth="239.0">
                      <children>
-                        <Rectangle arcHeight="5.0" arcWidth="6.0" fill="#e3e7eb" height="311.0" layoutX="1.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="2.0" width="524.0" />
-                        <Text layoutX="196.0" layoutY="28.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Напряжения, В">
+                        <Rectangle arcHeight="5.0" arcWidth="6.0" fill="#e3e7eb" height="403.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="2.0" width="293.0" />
+                        <Text layoutX="40.0" layoutY="29.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Экспорт данных в файл">
                            <font>
                               <Font name="System Bold" size="18.0" />
                            </font>
                         </Text>
-                        <Line endX="361.5" layoutX="162.0" layoutY="46.0" startX="-160.0" strokeWidth="2.0" />
-                        <LineChart fx:id="voltageChart" layoutX="14.0" layoutY="55.0" prefHeight="255.0" prefWidth="495.0">
+                        <Line endX="128.0" layoutX="162.0" layoutY="46.0" startX="-160.0" strokeWidth="2.0" />
+                        <Button fx:id="exportApplyButton" layoutX="50.0" layoutY="290.0" mnemonicParsing="false" onAction="#onApplyButtonClick" prefHeight="34.0" prefWidth="193.0" text="Применить" />
+                        <ComboBox fx:id="exportConfigurationComboBox" layoutX="71.0" layoutY="115.0" onAction="#initialValuesOfParameters" prefWidth="150.0" />
+                        <Text layoutX="78.0" layoutY="84.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Конфигурация экспорта" textAlignment="CENTER" wrappingWidth="134.06103515625">
+                           <font>
+                              <Font size="15.0" />
+                           </font>
+                        </Text>
+                        <TextField fx:id="exportFileLocation" layoutX="73.0" layoutY="178.0" />
+                        <Text layoutX="74.0" layoutY="166.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Расположение файла">
+                           <font>
+                              <Font size="15.0" />
+                           </font>
+                        </Text>
+                     </children>
+                  </AnchorPane>
+                  <AnchorPane layoutX="768.0" layoutY="458.0" prefHeight="348.0" prefWidth="682.0">
+                     <children>
+                        <Rectangle arcHeight="5.0" arcWidth="6.0" fill="#e3e7eb" height="348.0" layoutX="1.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="2.0" width="682.0" />
+                        <Text layoutX="275.0" layoutY="28.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Напряжения, В">
+                           <font>
+                              <Font name="System Bold" size="18.0" />
+                           </font>
+                        </Text>
+                        <Line endX="519.0" layoutX="162.0" layoutY="46.0" startX="-160.0" strokeWidth="2.0" />
+                        <LineChart fx:id="voltageChart" layoutX="14.0" layoutY="55.0" prefHeight="255.0" prefWidth="658.0">
                            <xAxis>
                               <CategoryAxis fx:id="voltageChartXAxis" side="BOTTOM" />
                            </xAxis>
@@ -181,6 +207,7 @@
                               <NumberAxis fx:id="voltageChartYAxis" side="LEFT" />
                            </yAxis>
                         </LineChart>
+                        <Slider fx:id="voltagesChartSlider" layoutX="61.0" layoutY="320.0" prefHeight="14.0" prefWidth="602.0" />
                      </children>
                   </AnchorPane>
                </children></AnchorPane>

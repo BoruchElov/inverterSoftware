@@ -68,6 +68,8 @@ public class MainController {
     private Button stopGettingData;
     @FXML
     private Button setNewParameterValue;
+    @FXML
+    private Button exportApplyButton;
 
     private ObservableList<Currents> currentsData = FXCollections.observableArrayList();
     private ObservableList<Voltages> voltagesData = FXCollections.observableArrayList();
@@ -92,6 +94,14 @@ public class MainController {
     private TableColumn<Voltages, Float> phaseBVoltageColumn;
     @FXML
     private TableColumn<Voltages, Float> phaseCVoltageColumn;
+    @FXML
+    private Slider currentsChartSlider;
+    @FXML
+    private Slider voltagesChartSlider;
+    @FXML
+    private ComboBox exportConfigurationComboBox;
+    @FXML
+    private TextField exportFileLocation;
 
     private XYChart.Series currentPhaseASeries;
     private XYChart.Series currentPhaseBSeries;
@@ -261,63 +271,6 @@ public class MainController {
                             currentPhaseCSeries.getData().remove(0);
                         }
                     }
-                    /*lock.lock();
-                    try {
-                        voltagePhaseASeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputs[0]));
-                        if (voltagePhaseASeries.getData().size() > 100) {
-                            voltagePhaseASeries.getData().remove(0);
-                        }
-                        voltagePhaseBSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputs[1]));
-                        if (voltagePhaseBSeries.getData().size() > 100) {
-                            voltagePhaseBSeries.getData().remove(0);
-                        }
-                        voltagePhaseCSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputs[2]));
-                        if (voltagePhaseCSeries.getData().size() > 100) {
-                            voltagePhaseCSeries.getData().remove(0);
-                        }
-                        currentPhaseASeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputs[3]));
-                        if (currentPhaseASeries.getData().size() > 100) {
-                            currentPhaseASeries.getData().remove(0);
-                        }
-                        currentPhaseBSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputs[4]));
-                        if (currentPhaseBSeries.getData().size() > 100) {
-                            currentPhaseBSeries.getData().remove(0);
-                        }
-                        currentPhaseCSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputs[5]));
-                        if (currentPhaseCSeries.getData().size() > 100) {
-                            currentPhaseCSeries.getData().remove(0);
-                        }
-                    } finally {
-                        lock.unlock();
-                    }*/
-/*
-                    voltagePhaseASeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputs[0]));
-                    voltagePhaseBSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputs[1]));
-                    voltagePhaseCSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputs[2]));
-
-                    currentPhaseASeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputs[3]));
-                    currentPhaseBSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputs[4]));
-                    currentPhaseCSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputs[5]));
-
-                    // Check if the series size exceeds 500 points
-                    if (voltagePhaseASeries.getData().size() > 100) {
-                        voltagePhaseASeries.getData().remove(0);
-                    }
-                    if (voltagePhaseBSeries.getData().size() > 100) {
-                        voltagePhaseBSeries.getData().remove(0);
-                    }
-                    if (voltagePhaseCSeries.getData().size() > 100) {
-                        voltagePhaseCSeries.getData().remove(0);
-                    }
-                    if (currentPhaseASeries.getData().size() > 100) {
-                        currentPhaseASeries.getData().remove(0);
-                    }
-                    if (currentPhaseBSeries.getData().size() > 100) {
-                        currentPhaseBSeries.getData().remove(0);
-                    }
-                    if (currentPhaseCSeries.getData().size() > 100) {
-                        currentPhaseCSeries.getData().remove(0);
-                    }*/
                 });
             }
         }).start();

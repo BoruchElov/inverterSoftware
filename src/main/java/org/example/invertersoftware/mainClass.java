@@ -13,7 +13,7 @@ public class mainClass extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(mainClass.class.getResource("modbusSoftware.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 1200, 830);
+        Scene scene = new Scene(fxmlLoader.load(), 1500, 860);
         stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResource("/images/control-system.png")).toExternalForm()));
         stage.setResizable(false);
         stage.setTitle("Controller Interaction App");
