@@ -14,6 +14,9 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 public class MainController {
 
 
@@ -97,7 +100,7 @@ public class MainController {
     private XYChart.Series voltagePhaseASeries;
     private XYChart.Series voltagePhaseBSeries;
     private XYChart.Series voltagePhaseCSeries;
-
+    private final Lock lock = new ReentrantLock();
 
     private boolean isRunning = false;
     private boolean allowedToDisplayData = false;
@@ -128,7 +131,7 @@ public class MainController {
         voltageChart.getYAxis().setAnimated(false);
 
         currentTime = 0;
-        
+
         currentPhaseASeries = new XYChart.Series();
         currentPhaseBSeries = new XYChart.Series();
         currentPhaseCSeries = new XYChart.Series();
@@ -161,18 +164,15 @@ public class MainController {
         dataBitsComboBox.getItems().addAll(7, 8);
         parityComboBox.getItems().addAll("None", "Even", "Odd");
         stopBitsComboBox.getItems().addAll(1, 2);
-        currentsData.add(new Currents(0,0,0));
-        voltagesData.add(new Voltages(0,0,0));
+        currentsData.add(new Currents(0, 0, 0));
+        voltagesData.add(new Voltages(0, 0, 0));
     }
 
     /**
-     *
-     *
      * Method onConnectButtonClick() is called when user presses on the connection button.
-     *
+     * <p>
      * In this method variable referring to the connection time is reset. This method also starts application if it is
      * not running or stops in other case.
-     *
      */
     @FXML
     private void onConnectButtonClick() throws ModbusException {
@@ -189,13 +189,13 @@ public class MainController {
      * At first, it checks if there is a connection, so it possible to obtain data.
      * If it is, method sends requests to the controller for reading holding registers, gets the response and displays it
      * in the tables using the method displayOutputs().
-     *
+     * <p>
      * If there is no connection method throws an exception.
      */
     @FXML
     private void onGetDataButtonClick() {
         currentTime = 0;
-        
+
         allowedToDisplayData = modbusConnection != null;
         if (!currentChart.getData().contains(currentPhaseASeries)) {
             currentChart.getData().add(currentPhaseASeries);
@@ -225,14 +225,79 @@ public class MainController {
                     Thread.currentThread().interrupt();
                 }
                 Platform.runLater(() -> {
-                    
-                    voltagePhaseASeries.getData().add(new XYChart.Data<>(String.format("%.3f",currentTime), outputs[0]));
-                    voltagePhaseBSeries.getData().add(new XYChart.Data<>(String.format("%.3f",currentTime), outputs[1]));
-                    voltagePhaseCSeries.getData().add(new XYChart.Data<>(String.format("%.3f",currentTime), outputs[2]));
+                    synchronized (voltagePhaseASeries) {
+                        voltagePhaseASeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputs[0]));
+                        if (voltagePhaseASeries.getData().size() > 50) {
+                            voltagePhaseASeries.getData().remove(0);
+                        }
+                    }
+                    synchronized (voltagePhaseBSeries) {
+                        voltagePhaseBSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputs[1]));
+                        if (voltagePhaseBSeries.getData().size() > 50) {
+                            voltagePhaseBSeries.getData().remove(0);
+                        }
+                    }
+                    synchronized (voltagePhaseCSeries) {
+                        voltagePhaseCSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputs[2]));
+                        if (voltagePhaseCSeries.getData().size() > 50) {
+                            voltagePhaseCSeries.getData().remove(0);
+                        }
+                    }
+                    synchronized (currentPhaseASeries) {
+                        currentPhaseASeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputs[3]));
+                        if (currentPhaseASeries.getData().size() > 50) {
+                            currentPhaseASeries.getData().remove(0);
+                        }
+                    }
+                    synchronized (currentPhaseBSeries) {
+                        currentPhaseBSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputs[4]));
+                        if (currentPhaseBSeries.getData().size() > 50) {
+                            currentPhaseBSeries.getData().remove(0);
+                        }
+                    }
+                    synchronized (currentPhaseCSeries) {
+                        currentPhaseCSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputs[5]));
+                        if (currentPhaseCSeries.getData().size() > 50) {
+                            currentPhaseCSeries.getData().remove(0);
+                        }
+                    }
+                    /*lock.lock();
+                    try {
+                        voltagePhaseASeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputs[0]));
+                        if (voltagePhaseASeries.getData().size() > 100) {
+                            voltagePhaseASeries.getData().remove(0);
+                        }
+                        voltagePhaseBSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputs[1]));
+                        if (voltagePhaseBSeries.getData().size() > 100) {
+                            voltagePhaseBSeries.getData().remove(0);
+                        }
+                        voltagePhaseCSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputs[2]));
+                        if (voltagePhaseCSeries.getData().size() > 100) {
+                            voltagePhaseCSeries.getData().remove(0);
+                        }
+                        currentPhaseASeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputs[3]));
+                        if (currentPhaseASeries.getData().size() > 100) {
+                            currentPhaseASeries.getData().remove(0);
+                        }
+                        currentPhaseBSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputs[4]));
+                        if (currentPhaseBSeries.getData().size() > 100) {
+                            currentPhaseBSeries.getData().remove(0);
+                        }
+                        currentPhaseCSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputs[5]));
+                        if (currentPhaseCSeries.getData().size() > 100) {
+                            currentPhaseCSeries.getData().remove(0);
+                        }
+                    } finally {
+                        lock.unlock();
+                    }*/
+/*
+                    voltagePhaseASeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputs[0]));
+                    voltagePhaseBSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputs[1]));
+                    voltagePhaseCSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputs[2]));
 
-                    currentPhaseASeries.getData().add(new XYChart.Data<>(String.format("%.3f",currentTime), outputs[3]));
-                    currentPhaseBSeries.getData().add(new XYChart.Data<>(String.format("%.3f",currentTime), outputs[4]));
-                    currentPhaseCSeries.getData().add(new XYChart.Data<>(String.format("%.3f",currentTime), outputs[5]));
+                    currentPhaseASeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputs[3]));
+                    currentPhaseBSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputs[4]));
+                    currentPhaseCSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputs[5]));
 
                     // Check if the series size exceeds 500 points
                     if (voltagePhaseASeries.getData().size() > 100) {
@@ -252,7 +317,7 @@ public class MainController {
                     }
                     if (currentPhaseCSeries.getData().size() > 100) {
                         currentPhaseCSeries.getData().remove(0);
-                    }
+                    }*/
                 });
             }
         }).start();
@@ -287,7 +352,6 @@ public class MainController {
      * that is set by user. After that actual values of control system parameters get updated using the method
      * updateControlSystemParameters() from ModbusConnection class and get shown using the
      * method initialValuesOfParameters()
-     *
      */
 
     @FXML
@@ -313,7 +377,6 @@ public class MainController {
      * Method startProgram() gets the data from the text fields and sets the values of the connection parameters.
      * It also sends a request for connection, sets the status of application as "Running" and changes the text of
      * connection button from "Connect" to "Disconnect", so it can be used for both connection and disconnection
-     *
      */
     private void startProgram() throws ModbusException {
 
@@ -356,7 +419,7 @@ public class MainController {
         currentTime += interval * 0.001f;
 
         currentsData.removeLast();
-        currentsData.add(new Currents(outputs[3],outputs[4],outputs[5]));
+        currentsData.add(new Currents(outputs[3], outputs[4], outputs[5]));
 
         voltagesData.removeLast();
         voltagesData.add(new Voltages(outputs[0], outputs[1], outputs[2]));
