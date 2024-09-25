@@ -19,6 +19,8 @@ import javafx.util.Duration;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -88,6 +90,7 @@ public class MainController {
     private float currentTime;
     float[] outputsForTables;
     float[] outputsForCharts;
+    float[] outputs;
 
     PauseTransition pause = new PauseTransition(Duration.seconds(5)); // 5 seconds delay
     PauseTransition pauseForChangingParameters = new PauseTransition(Duration.seconds(5)); // 5 seconds delay
@@ -121,6 +124,14 @@ public class MainController {
     private XYChart.Series voltagePhaseASeries;
     private XYChart.Series voltagePhaseBSeries;
     private XYChart.Series voltagePhaseCSeries;
+    
+    private List<Float> currentPhaseAExportList;
+    private List<Float> currentPhaseBExportList;
+    private List<Float> currentPhaseCExportList;
+    private List<Float> voltagePhaseAExportList;
+    private List<Float> voltagePhaseBExportList;
+    private List<Float> voltagePhaseCExportList;
+    private List<Float> timeExportList;
 
     private String filePath;
 
@@ -141,13 +152,22 @@ public class MainController {
     private int slaveID;
     private int lineChartInterval;
 
+    private float exportTime;
+
     /**
      * Method initialized() is used for initialization of some variables values and all the interface elements
      */
     @FXML
-    public void initialize() throws IOException {
+    public void initialize() {
         //Объект файла
         //BufferedWriter writer = new BufferedWriter(new FileWriter(new File(exportFileLocation.getText())));
+        currentPhaseAExportList = new ArrayList<>();
+        currentPhaseBExportList = new ArrayList<>();
+        currentPhaseCExportList = new ArrayList<>();
+        voltagePhaseAExportList = new ArrayList<>();
+        voltagePhaseBExportList = new ArrayList<>();
+        voltagePhaseCExportList = new ArrayList<>();
+        timeExportList = new ArrayList<>();
 
         currentChart.setCreateSymbols(false);
         currentChart.getXAxis().setAnimated(false);
@@ -211,7 +231,8 @@ public class MainController {
      * not running or stops in other case.
      */
     @FXML
-    private void onConnectButtonClick() throws ModbusException {
+    private void onConnectButtonClick() throws ModbusException, IOException {
+        exportTime = 0;
         currentTime = 0;
         if (isRunning) {
             onStopDisplayingDataButtonClick();
@@ -268,6 +289,8 @@ public class MainController {
         new Thread(() -> {
             while (allowedToDisplayData) {
                 modbusConnection.readRegisters();
+                addDataToArrayList();
+                System.out.println(currentPhaseAExportList.size());
                 try {
                     Thread.sleep(interval);
                 } catch (InterruptedException e) {
@@ -334,13 +357,29 @@ public class MainController {
         }
     }
 
+    public void addDataToArrayList() {
+        outputs = modbusConnection.getOutputs();
+
+        timeExportList.add(exportTime);
+
+        currentPhaseAExportList.add(outputs[3]);
+        currentPhaseBExportList.add(outputs[4]);
+        currentPhaseCExportList.add(outputs[5]);
+
+        voltagePhaseAExportList.add(outputs[0]);
+        voltagePhaseBExportList.add(outputs[1]);
+        voltagePhaseCExportList.add(outputs[2]);
+
+        exportTime += interval * 0.001f;
+    }
+
     /**
      * Method onStopDisplayingDataButtonClick() sets the variable allowedToDisplayData value to false, so it stops the
      * Thread of obtaining data.
      */
 
     @FXML
-    private void onStopDisplayingDataButtonClick() {
+    private void onStopDisplayingDataButtonClick() throws IOException {
         pause.setOnFinished(event ->
                 turnElementOn(getData));
         pause.play();
@@ -358,6 +397,9 @@ public class MainController {
 
         allowedToDisplayData = false;
         turnElementOff(stopGettingData);
+        if(isExported.isSelected()) {
+            writeToTxt(timeExportList, currentPhaseAExportList, exportFileLocation.getText());
+        }
     }
 
     /**
@@ -370,7 +412,7 @@ public class MainController {
      */
 
     @FXML
-    private void onApplyButtonClick() throws ModbusException {
+    private void onApplyButtonClick() throws ModbusException, IOException {
         onStopDisplayingDataButtonClick();
 
 
@@ -431,6 +473,8 @@ public class MainController {
         allowedToDisplayData = false;
     }
 
+
+
     /**
      * Method displayOutputs() gets the value obtained through readMultipleRegisters request and puts it in the tables
      */
@@ -452,11 +496,6 @@ public class MainController {
         outputsForCharts = modbusConnection.getOutputs();
     }
 
-    public void enableTheButton() {
-        pause.setOnFinished(event ->
-                getData.setDisable(false));
-    }
-
     public void turnElementOff(@NotNull Node element) {
         element.setDisable(true);
     }
@@ -464,14 +503,13 @@ public class MainController {
     public void turnElementOn(@NotNull Node element) {
         element.setDisable(false);
     }
-    public static void writeToTxt (int [][] array, String filePathName) throws IOException{
+    public static void writeToTxt (List<Float> timeList, List<Float> valuesList, String filePathName) throws IOException{
         BufferedWriter writer = new BufferedWriter(new FileWriter(new File(filePathName)));
-        for (int i = 0; i < array.length; i++) {
-            for (int j = 0; j < array.length; j++) {
-                writer.write(String.valueOf(array[i][j]));
+        for (int i = 0; i < timeList.size(); i++) {
+                writer.write(String.valueOf(timeList.get(i)));
                 writer.write(" ");
-            }
-            writer.write("\r\n");
+                writer.write(String.valueOf(valuesList.get(i)));
+                writer.write("\r\n");
         }
         writer.flush();
     }
