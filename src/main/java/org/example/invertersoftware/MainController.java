@@ -51,8 +51,6 @@ public class MainController {
     @FXML
     private ComboBox<Integer> stopBitsComboBox;
     @FXML
-    private TextField intervalTextField;
-    @FXML
     private ComboBox<Integer> intervalComboBox;
     @FXML
     private TextField timeoutTextField;
@@ -74,6 +72,10 @@ public class MainController {
     private Button setNewParameterValue;
     @FXML
     private Button exportApplyButton;
+    @FXML
+    private ComboBox<String> exportConfigurationComboBox;
+    @FXML
+    private TextField exportFileLocation;
 
     private ObservableList<Currents> currentsData = FXCollections.observableArrayList();
     private ObservableList<Voltages> voltagesData = FXCollections.observableArrayList();
@@ -84,7 +86,6 @@ public class MainController {
 
     PauseTransition pause = new PauseTransition(Duration.seconds(5)); // 5 seconds delay
     PauseTransition pauseForChangingParameters = new PauseTransition(Duration.seconds(5)); // 5 seconds delay
-
 
     @FXML
     private TableView<Currents> currentsTable;
@@ -107,10 +108,6 @@ public class MainController {
     private Slider currentsChartSlider;
     @FXML
     private Slider voltagesChartSlider;
-    @FXML
-    private ComboBox exportConfigurationComboBox;
-    @FXML
-    private TextField exportFileLocation;
 
     private XYChart.Series currentPhaseASeries;
     private XYChart.Series currentPhaseBSeries;
@@ -178,6 +175,8 @@ public class MainController {
         voltagesTable.setItems(voltagesData);
 
         intervalComboBox.getItems().addAll(1, 10, 100, 1000);
+
+        exportConfigurationComboBox.getItems().addAll("Токи", "Напряжения", "Токи и напряжения");
 
         portComboBox.getItems().addAll("COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "COM10",
                 "COM11", "COM12", "COM13", "COM14", "COM15");
