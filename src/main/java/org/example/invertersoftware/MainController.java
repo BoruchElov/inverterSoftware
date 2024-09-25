@@ -267,7 +267,10 @@ public class MainController {
     @FXML
     private void onGetDataButtonClick() {
         turnElementOn(stopGettingData);
+        turnElementOff(exportConfigurationComboBox);
+        turnElementOff(exportFileLocation);
         turnElementOff(exportApplyButton);
+        turnElementOff(isExported);
 
         getData.setDisable(true);
         if (interval <= 100) {
@@ -417,7 +420,11 @@ public class MainController {
                     currentPhaseCExportList, voltagePhaseAExportList, voltagePhaseBExportList,
                     voltagePhaseCExportList, pathToExportFile, exportFileConfiguration);
         }
+        turnElementOn(exportConfigurationComboBox);
+        turnElementOn(exportFileLocation);
         turnElementOn(exportApplyButton);
+        turnElementOn(isExported);
+        exportTime = 0;
     }
 
     /**
@@ -549,11 +556,11 @@ public class MainController {
         } else if (Objects.equals(Configuration, "Напряжения")) {
             writer.write("Время, с");
             writer.write("; ");
-            writer.write("Напряжение фазы А, А");
+            writer.write("Напряжение фазы А, В");
             writer.write("; ");
-            writer.write("Напряжение фазы В, А");
+            writer.write("Напряжение фазы В, В");
             writer.write("; ");
-            writer.write("Напряжение фазы С, А");
+            writer.write("Напряжение фазы С, В");
             writer.write("\r\n");
 
             for (int i = 0; i < timeList.size(); i++) {
@@ -576,11 +583,11 @@ public class MainController {
             writer.write("; ");
             writer.write("Ток фазы С, А");
             writer.write("; ");
-            writer.write("Напряжение фазы А, А");
+            writer.write("Напряжение фазы А, В");
             writer.write("; ");
-            writer.write("Напряжение фазы В, А");
+            writer.write("Напряжение фазы В, В");
             writer.write("; ");
-            writer.write("Напряжение фазы С, А");
+            writer.write("Напряжение фазы С, В");
             writer.write("\r\n");
 
             for (int i = 0; i < timeList.size(); i++) {
@@ -603,6 +610,7 @@ public class MainController {
             }
             writer.flush();
         }
+
         timeList.clear();
         pACList.clear();
         pBCList.clear();
