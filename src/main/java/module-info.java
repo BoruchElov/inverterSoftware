@@ -11,6 +11,7 @@ module org.example.invertersoftware {
     requires eu.hansolo.tilesfx;
     requires com.almasb.fxgl.all;
     requires j2mod;
+    requires annotations;
 
     opens org.example.invertersoftware to javafx.fxml;
     exports org.example.invertersoftware;

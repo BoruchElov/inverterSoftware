@@ -7,6 +7,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
@@ -15,7 +16,9 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.util.Duration;
+import org.jetbrains.annotations.NotNull;
 
+import java.io.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -76,6 +79,8 @@ public class MainController {
     private ComboBox<String> exportConfigurationComboBox;
     @FXML
     private TextField exportFileLocation;
+    @FXML
+    private CheckBox isExported;
 
     private ObservableList<Currents> currentsData = FXCollections.observableArrayList();
     private ObservableList<Voltages> voltagesData = FXCollections.observableArrayList();
@@ -116,11 +121,14 @@ public class MainController {
     private XYChart.Series voltagePhaseASeries;
     private XYChart.Series voltagePhaseBSeries;
     private XYChart.Series voltagePhaseCSeries;
-    private final Lock lock = new ReentrantLock();
+
+    private String filePath;
 
     private boolean isRunning = false;
     private boolean allowedToDisplayData = false;
     private ModbusConnection modbusConnection;
+
+    private boolean allowedToExportData = false;
 
     private String port;
     private int baudRate;
@@ -137,7 +145,10 @@ public class MainController {
      * Method initialized() is used for initialization of some variables values and all the interface elements
      */
     @FXML
-    public void initialize() {
+    public void initialize() throws IOException {
+        //Объект файла
+        //BufferedWriter writer = new BufferedWriter(new FileWriter(new File(exportFileLocation.getText())));
+
         currentChart.setCreateSymbols(false);
         currentChart.getXAxis().setAnimated(false);
         currentChart.getYAxis().setAnimated(false);
@@ -175,8 +186,11 @@ public class MainController {
         voltagesTable.setItems(voltagesData);
 
         intervalComboBox.getItems().addAll(1, 10, 100, 1000);
-
         exportConfigurationComboBox.getItems().addAll("Токи", "Напряжения", "Токи и напряжения");
+
+        turnElementOff(exportConfigurationComboBox);
+        turnElementOff(exportFileLocation);
+        turnElementOff(exportApplyButton);
 
         portComboBox.getItems().addAll("COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "COM10",
                 "COM11", "COM12", "COM13", "COM14", "COM15");
@@ -187,6 +201,7 @@ public class MainController {
         stopBitsComboBox.getItems().addAll(1, 2);
         currentsData.add(new Currents(0, 0, 0));
         voltagesData.add(new Voltages(0, 0, 0));
+        turnElementOff(setNewParameterValue);
     }
 
     /**
@@ -199,9 +214,14 @@ public class MainController {
     private void onConnectButtonClick() throws ModbusException {
         currentTime = 0;
         if (isRunning) {
+            onStopDisplayingDataButtonClick();
             stopProgram();
+            turnElementOff(setNewParameterValue);
+            allowedToExportData = false;
         } else {
             startProgram();
+            turnElementOn(setNewParameterValue);
+            allowedToExportData = true;
         }
     }
 
@@ -215,7 +235,7 @@ public class MainController {
      */
     @FXML
     private void onGetDataButtonClick() {
-        stopGettingData.setDisable(false);
+        turnElementOn(stopGettingData);
 
         getData.setDisable(true);
         if (interval <= 100) {
@@ -248,7 +268,6 @@ public class MainController {
         new Thread(() -> {
             while (allowedToDisplayData) {
                 modbusConnection.readRegisters();
-                displayOutputs();
                 try {
                     Thread.sleep(interval);
                 } catch (InterruptedException e) {
@@ -260,6 +279,7 @@ public class MainController {
         new Thread(() -> {
             while (allowedToDisplayData) {
                 currentTime += lineChartInterval * 0.001f;
+                displayOutputs();
                 plotOutPuts();
                 try {
                     Thread.sleep(lineChartInterval);
@@ -267,33 +287,51 @@ public class MainController {
                     Thread.currentThread().interrupt();
                 }
                 Platform.runLater(() -> {
-                        voltagePhaseASeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputsForCharts[0]));
-                        if (voltagePhaseASeries.getData().size() > 50) {
-                            voltagePhaseASeries.getData().remove(0);
-                        }
-                        voltagePhaseBSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputsForCharts[1]));
-                        if (voltagePhaseBSeries.getData().size() > 50) {
-                            voltagePhaseBSeries.getData().remove(0);
-                        }
-                        voltagePhaseCSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputsForCharts[2]));
-                        if (voltagePhaseCSeries.getData().size() > 50) {
-                            voltagePhaseCSeries.getData().remove(0);
-                        }
-                        currentPhaseASeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputsForCharts[3]));
-                        if (currentPhaseASeries.getData().size() > 50) {
-                            currentPhaseASeries.getData().remove(0);
-                        }
-                        currentPhaseBSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputsForCharts[4]));
-                        if (currentPhaseBSeries.getData().size() > 50) {
-                            currentPhaseBSeries.getData().remove(0);
-                        }
-                        currentPhaseCSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputsForCharts[5]));
-                        if (currentPhaseCSeries.getData().size() > 50) {
-                            currentPhaseCSeries.getData().remove(0);
-                        }
+                    voltagePhaseASeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputsForCharts[0]));
+                    if (voltagePhaseASeries.getData().size() > 50) {
+                        voltagePhaseASeries.getData().remove(0);
+                    }
+                    voltagePhaseBSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputsForCharts[1]));
+                    if (voltagePhaseBSeries.getData().size() > 50) {
+                        voltagePhaseBSeries.getData().remove(0);
+                    }
+                    voltagePhaseCSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputsForCharts[2]));
+                    if (voltagePhaseCSeries.getData().size() > 50) {
+                        voltagePhaseCSeries.getData().remove(0);
+                    }
+                    currentPhaseASeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputsForCharts[3]));
+                    if (currentPhaseASeries.getData().size() > 50) {
+                        currentPhaseASeries.getData().remove(0);
+                    }
+                    currentPhaseBSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputsForCharts[4]));
+                    if (currentPhaseBSeries.getData().size() > 50) {
+                        currentPhaseBSeries.getData().remove(0);
+                    }
+                    currentPhaseCSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputsForCharts[5]));
+                    if (currentPhaseCSeries.getData().size() > 50) {
+                        currentPhaseCSeries.getData().remove(0);
+                    }
                 });
             }
         }).start();
+    }
+
+    public void exportEnable() {
+        if (allowedToExportData) {
+            if (isExported.isSelected()) {
+                turnElementOn(exportConfigurationComboBox);
+                turnElementOn(exportFileLocation);
+                turnElementOn(exportApplyButton);
+            } else {
+                turnElementOff(exportConfigurationComboBox);
+                turnElementOff(exportFileLocation);
+                turnElementOff(exportApplyButton);
+            }
+        } else {
+            turnElementOff(exportConfigurationComboBox);
+            turnElementOff(exportFileLocation);
+            turnElementOff(exportApplyButton);
+        }
     }
 
     /**
@@ -303,7 +341,8 @@ public class MainController {
 
     @FXML
     private void onStopDisplayingDataButtonClick() {
-        enableTheButton();
+        pause.setOnFinished(event ->
+                turnElementOn(getData));
         pause.play();
         currentPhaseASeries.getData().clear();
         currentPhaseBSeries.getData().clear();
@@ -318,8 +357,7 @@ public class MainController {
         voltageChartXAxis.getCategories().clear();
 
         allowedToDisplayData = false;
-
-        stopGettingData.setDisable(true);
+        turnElementOff(stopGettingData);
     }
 
     /**
@@ -335,13 +373,14 @@ public class MainController {
     private void onApplyButtonClick() throws ModbusException {
         onStopDisplayingDataButtonClick();
 
+
         modbusConnection.writeRegisters(slaveID, 0, parametersComboBox.getValue(), Float.parseFloat(newParametervalue.getText()));
         modbusConnection.updateControlSystemParameters();
 
         initialValuesOfParameters();
-        setNewParameterValue.setDisable(true);
+        turnElementOff(setNewParameterValue);
         pauseForChangingParameters.setOnFinished(event -> {
-            setNewParameterValue.setDisable(false);
+            turnElementOn(setNewParameterValue);
         });
         pauseForChangingParameters.play();
     }
@@ -412,9 +451,30 @@ public class MainController {
     public void plotOutPuts() {
         outputsForCharts = modbusConnection.getOutputs();
     }
+
     public void enableTheButton() {
         pause.setOnFinished(event ->
                 getData.setDisable(false));
     }
+
+    public void turnElementOff(@NotNull Node element) {
+        element.setDisable(true);
+    }
+
+    public void turnElementOn(@NotNull Node element) {
+        element.setDisable(false);
+    }
+    public static void writeToTxt (int [][] array, String filePathName) throws IOException{
+        BufferedWriter writer = new BufferedWriter(new FileWriter(new File(filePathName)));
+        for (int i = 0; i < array.length; i++) {
+            for (int j = 0; j < array.length; j++) {
+                writer.write(String.valueOf(array[i][j]));
+                writer.write(" ");
+            }
+            writer.write("\r\n");
+        }
+        writer.flush();
+    }
+
 }
 
