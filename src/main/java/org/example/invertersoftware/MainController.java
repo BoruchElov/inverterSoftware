@@ -51,6 +51,8 @@ public class MainController {
     @FXML
     private TextField intervalTextField;
     @FXML
+    private ComboBox<Integer> intervalComboBox;
+    @FXML
     private TextField timeoutTextField;
     @FXML
     private TextField slaveIdentificationNumber;
@@ -166,6 +168,8 @@ public class MainController {
 
         currentsTable.setItems(currentsData);
         voltagesTable.setItems(voltagesData);
+
+        intervalComboBox.getItems().addAll(1, 10, 100, 1000);
 
         portComboBox.getItems().addAll("COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "COM10",
                 "COM11", "COM12", "COM13", "COM14", "COM15");
@@ -338,7 +342,7 @@ public class MainController {
         dataBits = dataBitsComboBox.getValue();
         parity = parityComboBox.getValue();
         stopBits = stopBitsComboBox.getValue();
-        interval = Integer.parseInt(intervalTextField.getText());
+        interval = intervalComboBox.getValue();
         timeout = Integer.parseInt(timeoutTextField.getText());
         retries = Integer.parseInt(retriesTextField.getText());
         slaveID = Integer.parseInt(slaveIdentificationNumber.getText());

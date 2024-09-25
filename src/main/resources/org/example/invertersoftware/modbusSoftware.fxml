@@ -67,7 +67,6 @@
                               <Font size="15.0" />
                            </font>
                         </Text>
-                        <TextField fx:id="intervalTextField" layoutX="199.0" layoutY="207.0" />
                         <Text layoutX="201.0" layoutY="256.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Время ожидания соединения, мс" textAlignment="CENTER" wrappingWidth="145.0771484375">
                            <font>
                               <Font size="15.0" />
@@ -87,6 +86,7 @@
                            </font>
                         </Text>
                         <Button fx:id="connectButton" layoutX="232.0" layoutY="78.0" mnemonicParsing="false" onAction="#onConnectButtonClick" text="Соединение" />
+                        <ComboBox fx:id="intervalComboBox" layoutX="198.0" layoutY="207.0" prefWidth="150.0" />
                      </children>
                   </AnchorPane>
                   <AnchorPane layoutX="487.0" layoutY="25.0" prefHeight="403.0" prefWidth="239.0">
