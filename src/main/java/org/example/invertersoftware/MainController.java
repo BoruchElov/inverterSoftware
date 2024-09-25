@@ -1,6 +1,7 @@
 package org.example.invertersoftware;
 
 import com.ghgande.j2mod.modbus.ModbusException;
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -13,6 +14,7 @@ import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
+import javafx.util.Duration;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -77,7 +79,12 @@ public class MainController {
     private ObservableList<Voltages> voltagesData = FXCollections.observableArrayList();
 
     private float currentTime;
-    float[] outputs;
+    float[] outputsForTables;
+    float[] outputsForCharts;
+
+    PauseTransition pause = new PauseTransition(Duration.seconds(5)); // 5 seconds delay
+    PauseTransition pauseForChangingParameters = new PauseTransition(Duration.seconds(5)); // 5 seconds delay
+
 
     @FXML
     private TableView<Currents> currentsTable;
@@ -127,7 +134,7 @@ public class MainController {
     private int timeout;
     private int retries;
     private int slaveID;
-
+    private int lineChartInterval;
 
     /**
      * Method initialized() is used for initialization of some variables values and all the interface elements
@@ -143,6 +150,7 @@ public class MainController {
         voltageChart.getYAxis().setAnimated(false);
 
         currentTime = 0;
+        lineChartInterval = 0;
 
         currentPhaseASeries = new XYChart.Series();
         currentPhaseBSeries = new XYChart.Series();
@@ -208,6 +216,15 @@ public class MainController {
      */
     @FXML
     private void onGetDataButtonClick() {
+        stopGettingData.setDisable(false);
+
+        getData.setDisable(true);
+        if (interval <= 100) {
+            lineChartInterval = 100;
+        } else {
+            lineChartInterval = interval;
+        }
+
         currentTime = 0;
 
         allowedToDisplayData = modbusConnection != null;
@@ -238,43 +255,43 @@ public class MainController {
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
+            }
+        }).start();
+
+        new Thread(() -> {
+            while (allowedToDisplayData) {
+                currentTime += lineChartInterval * 0.001f;
+                plotOutPuts();
+                try {
+                    Thread.sleep(lineChartInterval);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
                 Platform.runLater(() -> {
-                    synchronized (voltagePhaseASeries) {
-                        voltagePhaseASeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputs[0]));
+                        voltagePhaseASeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputsForCharts[0]));
                         if (voltagePhaseASeries.getData().size() > 50) {
                             voltagePhaseASeries.getData().remove(0);
                         }
-                    }
-                    synchronized (voltagePhaseBSeries) {
-                        voltagePhaseBSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputs[1]));
+                        voltagePhaseBSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputsForCharts[1]));
                         if (voltagePhaseBSeries.getData().size() > 50) {
                             voltagePhaseBSeries.getData().remove(0);
                         }
-                    }
-                    synchronized (voltagePhaseCSeries) {
-                        voltagePhaseCSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputs[2]));
+                        voltagePhaseCSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputsForCharts[2]));
                         if (voltagePhaseCSeries.getData().size() > 50) {
                             voltagePhaseCSeries.getData().remove(0);
                         }
-                    }
-                    synchronized (currentPhaseASeries) {
-                        currentPhaseASeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputs[3]));
+                        currentPhaseASeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputsForCharts[3]));
                         if (currentPhaseASeries.getData().size() > 50) {
                             currentPhaseASeries.getData().remove(0);
                         }
-                    }
-                    synchronized (currentPhaseBSeries) {
-                        currentPhaseBSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputs[4]));
+                        currentPhaseBSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputsForCharts[4]));
                         if (currentPhaseBSeries.getData().size() > 50) {
                             currentPhaseBSeries.getData().remove(0);
                         }
-                    }
-                    synchronized (currentPhaseCSeries) {
-                        currentPhaseCSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputs[5]));
+                        currentPhaseCSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputsForCharts[5]));
                         if (currentPhaseCSeries.getData().size() > 50) {
                             currentPhaseCSeries.getData().remove(0);
                         }
-                    }
                 });
             }
         }).start();
@@ -287,6 +304,8 @@ public class MainController {
 
     @FXML
     private void onStopDisplayingDataButtonClick() {
+        enableTheButton();
+        pause.play();
         currentPhaseASeries.getData().clear();
         currentPhaseBSeries.getData().clear();
         currentPhaseCSeries.getData().clear();
@@ -300,6 +319,8 @@ public class MainController {
         voltageChartXAxis.getCategories().clear();
 
         allowedToDisplayData = false;
+
+        stopGettingData.setDisable(true);
     }
 
     /**
@@ -319,6 +340,11 @@ public class MainController {
         modbusConnection.updateControlSystemParameters();
 
         initialValuesOfParameters();
+        setNewParameterValue.setDisable(true);
+        pauseForChangingParameters.setOnFinished(event -> {
+            setNewParameterValue.setDisable(false);
+        });
+        pauseForChangingParameters.play();
     }
 
     /**
@@ -372,17 +398,24 @@ public class MainController {
      */
 
     public void displayOutputs() {
-        outputs = modbusConnection.getOutputs();
-        currentTime += interval * 0.001f;
+        outputsForTables = modbusConnection.getOutputs();
 
         currentsData.removeLast();
-        currentsData.add(new Currents(outputs[3], outputs[4], outputs[5]));
+        currentsData.add(new Currents(outputsForTables[3], outputsForTables[4], outputsForTables[5]));
 
         voltagesData.removeLast();
-        voltagesData.add(new Voltages(outputs[0], outputs[1], outputs[2]));
+        voltagesData.add(new Voltages(outputsForTables[0], outputsForTables[1], outputsForTables[2]));
 
         currentsTable.setItems(currentsData);
         voltagesTable.setItems(voltagesData);
+    }
+
+    public void plotOutPuts() {
+        outputsForCharts = modbusConnection.getOutputs();
+    }
+    public void enableTheButton() {
+        pause.setOnFinished(event ->
+                getData.setDisable(false));
     }
 }
 
