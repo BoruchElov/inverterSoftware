@@ -21,6 +21,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -91,6 +92,8 @@ public class MainController {
     float[] outputsForTables;
     float[] outputsForCharts;
     float[] outputs;
+    private String exportFileConfiguration;
+    private String pathToExportFile;
 
     PauseTransition pause = new PauseTransition(Duration.seconds(5)); // 5 seconds delay
     PauseTransition pauseForChangingParameters = new PauseTransition(Duration.seconds(5)); // 5 seconds delay
@@ -207,6 +210,7 @@ public class MainController {
 
         intervalComboBox.getItems().addAll(1, 10, 100, 1000);
         exportConfigurationComboBox.getItems().addAll("Токи", "Напряжения", "Токи и напряжения");
+        exportConfigurationComboBox.setValue("Токи");
 
         turnElementOff(exportConfigurationComboBox);
         turnElementOff(exportFileLocation);
@@ -214,11 +218,17 @@ public class MainController {
 
         portComboBox.getItems().addAll("COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "COM10",
                 "COM11", "COM12", "COM13", "COM14", "COM15");
+        portComboBox.setValue("COM1");
         parametersComboBox.getItems().addAll("Sbase", "Vacbase", "KpPLL", "KiPLL");
+        parametersComboBox.setValue("Sbase");
         baudRateComboBox.getItems().addAll(9600, 14400, 19200, 38400, 57600, 115200);
+        baudRateComboBox.setValue(115200);
         dataBitsComboBox.getItems().addAll(7, 8);
+        dataBitsComboBox.setValue(8);
         parityComboBox.getItems().addAll("None", "Even", "Odd");
+        parityComboBox.setValue("None");
         stopBitsComboBox.getItems().addAll(1, 2);
+        stopBitsComboBox.setValue(1);
         currentsData.add(new Currents(0, 0, 0));
         voltagesData.add(new Voltages(0, 0, 0));
         turnElementOff(setNewParameterValue);
@@ -257,6 +267,7 @@ public class MainController {
     @FXML
     private void onGetDataButtonClick() {
         turnElementOn(stopGettingData);
+        turnElementOff(exportApplyButton);
 
         getData.setDisable(true);
         if (interval <= 100) {
@@ -290,7 +301,6 @@ public class MainController {
             while (allowedToDisplayData) {
                 modbusConnection.readRegisters();
                 addDataToArrayList();
-                System.out.println(currentPhaseAExportList.size());
                 try {
                     Thread.sleep(interval);
                 } catch (InterruptedException e) {
@@ -372,6 +382,11 @@ public class MainController {
 
         exportTime += interval * 0.001f;
     }
+    public void saveExportParameters() {
+        exportFileConfiguration = exportConfigurationComboBox.getValue();
+        pathToExportFile = exportFileLocation.getText();
+
+    }
 
     /**
      * Method onStopDisplayingDataButtonClick() sets the variable allowedToDisplayData value to false, so it stops the
@@ -398,8 +413,11 @@ public class MainController {
         allowedToDisplayData = false;
         turnElementOff(stopGettingData);
         if(isExported.isSelected()) {
-            writeToTxt(timeExportList, currentPhaseAExportList, exportFileLocation.getText());
+            writeToTxt(timeExportList, currentPhaseAExportList, currentPhaseBExportList,
+                    currentPhaseCExportList, voltagePhaseAExportList, voltagePhaseBExportList,
+                    voltagePhaseCExportList, pathToExportFile, exportFileConfiguration);
         }
+        turnElementOn(exportApplyButton);
     }
 
     /**
@@ -503,15 +521,95 @@ public class MainController {
     public void turnElementOn(@NotNull Node element) {
         element.setDisable(false);
     }
-    public static void writeToTxt (List<Float> timeList, List<Float> valuesList, String filePathName) throws IOException{
+    public static void writeToTxt (List<Float> timeList, List<Float> pACList, List<Float> pBCList, List<Float> pCCList,
+                                   List<Float> pAVList, List<Float> pBVList, List<Float> pCVList, String filePathName,
+                                   String Configuration) throws IOException{
         BufferedWriter writer = new BufferedWriter(new FileWriter(new File(filePathName)));
-        for (int i = 0; i < timeList.size(); i++) {
+        if (Objects.equals(Configuration, "Токи")) {
+            writer.write("Время, с");
+            writer.write("; ");
+            writer.write("Ток фазы А, А");
+            writer.write("; ");
+            writer.write("Ток фазы В, А");
+            writer.write("; ");
+            writer.write("Ток фазы С, А");
+            writer.write("\r\n");
+
+            for (int i = 0; i < timeList.size(); i++) {
                 writer.write(String.valueOf(timeList.get(i)));
-                writer.write(" ");
-                writer.write(String.valueOf(valuesList.get(i)));
+                writer.write("; ");
+                writer.write(String.valueOf(pACList.get(i)));
+                writer.write("; ");
+                writer.write(String.valueOf(pBCList.get(i)));
+                writer.write("; ");
+                writer.write(String.valueOf(pCCList.get(i)));
                 writer.write("\r\n");
+            }
+            writer.flush();
+        } else if (Objects.equals(Configuration, "Напряжения")) {
+            writer.write("Время, с");
+            writer.write("; ");
+            writer.write("Напряжение фазы А, А");
+            writer.write("; ");
+            writer.write("Напряжение фазы В, А");
+            writer.write("; ");
+            writer.write("Напряжение фазы С, А");
+            writer.write("\r\n");
+
+            for (int i = 0; i < timeList.size(); i++) {
+                writer.write(String.valueOf(timeList.get(i)));
+                writer.write("; ");
+                writer.write(String.valueOf(pAVList.get(i)));
+                writer.write("; ");
+                writer.write(String.valueOf(pBVList.get(i)));
+                writer.write("; ");
+                writer.write(String.valueOf(pCVList.get(i)));
+                writer.write("\r\n");
+            }
+            writer.flush();
+        } else if (Objects.equals(Configuration, "Токи и напряжения")) {
+            writer.write("Время, с");
+            writer.write("; ");
+            writer.write("Ток фазы А, А");
+            writer.write("; ");
+            writer.write("Ток фазы В, А");
+            writer.write("; ");
+            writer.write("Ток фазы С, А");
+            writer.write("; ");
+            writer.write("Напряжение фазы А, А");
+            writer.write("; ");
+            writer.write("Напряжение фазы В, А");
+            writer.write("; ");
+            writer.write("Напряжение фазы С, А");
+            writer.write("\r\n");
+
+            for (int i = 0; i < timeList.size(); i++) {
+                writer.write(String.valueOf(timeList.get(i)));
+                writer.write("; ");
+                writer.write(String.valueOf(pACList.get(i)));
+                writer.write("; ");
+                writer.write(String.valueOf(pBCList.get(i)));
+                writer.write("; ");
+                writer.write(String.valueOf(pCCList.get(i)));
+                writer.write("; ");
+                writer.write(String.valueOf(timeList.get(i)));
+                writer.write("; ");
+                writer.write(String.valueOf(pAVList.get(i)));
+                writer.write("; ");
+                writer.write(String.valueOf(pBVList.get(i)));
+                writer.write("; ");
+                writer.write(String.valueOf(pCVList.get(i)));
+                writer.write("\r\n");
+            }
+            writer.flush();
         }
-        writer.flush();
+        timeList.clear();
+        pACList.clear();
+        pBCList.clear();
+        pCCList.clear();
+        pAVList.clear();
+        pBVList.clear();
+        pCVList.clear();
     }
 
 }
