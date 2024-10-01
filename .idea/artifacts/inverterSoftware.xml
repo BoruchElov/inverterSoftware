@@ -1,0 +1,25 @@
+<component name="ArtifactManager">
+  <artifact type="javafx" name="inverterSoftware">
+    <output-path>$PROJECT_DIR$/out/artifacts/inverterSoftware</output-path>
+    <properties id="javafx-properties">
+      <options>
+        <option name="appClass" value="org.example.invertersoftware.mainClass" />
+        <option name="description" value="This software is used" />
+        <option name="height" value="860" />
+        <option name="htmlPlaceholderId" value="" />
+        <option name="title" value="Controller Interaction Application" />
+        <option name="vendor" value="Boris D. Maliuta" />
+        <option name="version" value="" />
+        <option name="width" value="1500" />
+      </options>
+    </properties>
+    <root id="root">
+      <element id="archive" name="inverterSoftware.jar">
+        <element id="directory" name="META-INF">
+          <element id="file-copy" path="$PROJECT_DIR$/META-INF/MANIFEST.MF" />
+        </element>
+        <element id="module-output" name="inverterSoftware" />
+      </element>
+    </root>
+  </artifact>
+</component>
