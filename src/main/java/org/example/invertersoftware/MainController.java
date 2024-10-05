@@ -139,7 +139,8 @@ public class MainController {
     private List<Float> timeExportList;
     private int exportPointsCount;
 
-    private List<Float[]> exportList;
+    private float[][] export;
+    private float[] time;
 
     private String filePath;
 
@@ -274,7 +275,7 @@ public class MainController {
     private void onGetDataButtonClick() throws IOException {
 
         if(isExported.isSelected()) {
-            createWriter(exportFileConfiguration);
+            saveExportParameters();
         }
 
         turnElementOn(stopGettingData);
@@ -315,6 +316,12 @@ public class MainController {
             while (allowedToDisplayData & isExported.isSelected()) {
                 exportTime += interval;
                 modbusConnection.readRegisters();
+                saveExportData(exportPointsCount);
+                exportPointsCount++;
+                if (exportPointsCount < exportListLength) {
+                    saveExportData(exportPointsCount);
+                    exportPointsCount++;
+                }
                 /*try {
                     addLinesToWriter(exportFileConfiguration);
                 } catch (IOException e) {
@@ -333,11 +340,6 @@ public class MainController {
                 currentTime += lineChartInterval * 0.001f;
                 displayOutputs();
                 plotOutPuts();
-                try {
-                    addLinesToWriter(exportFileConfiguration);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
                 try {
                     Thread.sleep(lineChartInterval);
                 } catch (InterruptedException e) {
@@ -391,34 +393,22 @@ public class MainController {
         }
     }
 
-    /*public void addDataToArrayList() {
-        //outputs = modbusConnection.getOutputs();
-
-        timeExportList.add(exportTime);
-
-        currentPhaseAExportList.add(modbusConnection.getOutputs()[3]);
-        currentPhaseBExportList.add(modbusConnection.getOutputs()[4]);
-        currentPhaseCExportList.add(modbusConnection.getOutputs()[5]);
-
-        voltagePhaseAExportList.add(modbusConnection.getOutputs()[0]);
-        voltagePhaseBExportList.add(modbusConnection.getOutputs()[1]);
-        voltagePhaseCExportList.add(modbusConnection.getOutputs()[2]);
-
-        // Batch data additions
-
-        exportTime += interval * 0.001f;
-    }*/
     public void saveExportParameters() {
         if(Integer.parseInt(writingTime.getText()) <= 0 || interval == 0) {
             exportListLength = 10;
         } else {
             exportListLength = Integer.parseInt(writingTime.getText()) / interval;
         }
-        exportList = new ArrayList<>(exportListLength);
+        export = new float[exportListLength][6];
+        time = new float[exportListLength];
 
         exportFileConfiguration = exportConfigurationComboBox.getValue();
         pathToExportFile = exportFileLocation.getText();
+    }
 
+    public void saveExportData(int position) {
+        export[position] = modbusConnection.getOutputs();
+        time[position] = currentTime;
     }
 
     /**
@@ -445,6 +435,7 @@ public class MainController {
 
         allowedToDisplayData = false;
         turnElementOff(stopGettingData);
+
         turnElementOn(isExported);
         if (isExported.isSelected()) {
             turnElementOn(exportConfigurationComboBox);
@@ -452,9 +443,8 @@ public class MainController {
             turnElementOn(exportApplyButton);
         }
         exportTime = 0;
-        if (isExported.isSelected()) {
-            flushWriter();
-        }
+        exportPointsCount = 0;
+        writeToTxt(exportFileConfiguration);
     }
 
     /**
@@ -558,7 +548,7 @@ public class MainController {
     public void turnElementOn(@NotNull Node element) {
         element.setDisable(false);
     }
-    /*public void writeToTxt (String Configuration) throws IOException{
+    public void writeToTxt (String Configuration) throws IOException{
         if (Objects.equals(Configuration, "Токи")) {
             writer.write("Время, с");
             writer.write("; ");
@@ -569,15 +559,15 @@ public class MainController {
             writer.write("Ток фазы С, А");
             writer.write("\r\n");
 
-            for (int i = 0; i < timeList.size(); i++) {
-                writer.write(String.valueOf(timeList.get(i)));
-                writer.write("; ");
-                writer.write(String.valueOf(pACList.get(i)));
-                writer.write("; ");
-                writer.write(String.valueOf(pBCList.get(i)));
-                writer.write("; ");
-                writer.write(String.valueOf(pCCList.get(i)));
-                writer.write("\r\n");
+            for (int i = 0; i < time.length; i++) {
+                    writer.write(String.valueOf(time[i]));
+                    writer.write("; ");
+                    writer.write(String.valueOf(export[i][3]));
+                    writer.write("; ");
+                    writer.write(String.valueOf(export[i][4]));
+                    writer.write("; ");
+                    writer.write(String.valueOf(export[i][5]));
+                    writer.write("\r\n");
             }
             writer.flush();
         } else if (Objects.equals(Configuration, "Напряжения")) {
@@ -590,14 +580,14 @@ public class MainController {
             writer.write("Напряжение фазы С, В");
             writer.write("\r\n");
 
-            for (int i = 0; i < timeList.size(); i++) {
-                writer.write(String.valueOf(timeList.get(i)));
+            for (int i = 0; i < time.length; i++) {
+                writer.write(String.valueOf(time[i]));
                 writer.write("; ");
-                writer.write(String.valueOf(pAVList.get(i)));
+                writer.write(String.valueOf(export[i][0]));
                 writer.write("; ");
-                writer.write(String.valueOf(pBVList.get(i)));
+                writer.write(String.valueOf(export[i][1]));
                 writer.write("; ");
-                writer.write(String.valueOf(pCVList.get(i)));
+                writer.write(String.valueOf(export[i][2]));
                 writer.write("\r\n");
             }
             writer.flush();
@@ -617,113 +607,23 @@ public class MainController {
             writer.write("Напряжение фазы С, В");
             writer.write("\r\n");
 
-            for (int i = 0; i < timeList.size(); i++) {
-                writer.write(String.valueOf(timeList.get(i)));
+            for (int i = 0; i < time.length; i++) {
+                writer.write(String.valueOf(time[i]));
                 writer.write("; ");
-                writer.write(String.valueOf(pACList.get(i)));
+                writer.write(String.valueOf(export[i][3]));
                 writer.write("; ");
-                writer.write(String.valueOf(pBCList.get(i)));
+                writer.write(String.valueOf(export[i][4]));
                 writer.write("; ");
-                writer.write(String.valueOf(pCCList.get(i)));
+                writer.write(String.valueOf(export[i][5]));
                 writer.write("; ");
-                writer.write(String.valueOf(pAVList.get(i)));
+                writer.write(String.valueOf(export[i][0]));
                 writer.write("; ");
-                writer.write(String.valueOf(pBVList.get(i)));
+                writer.write(String.valueOf(export[i][1]));
                 writer.write("; ");
-                writer.write(String.valueOf(pCVList.get(i)));
+                writer.write(String.valueOf(export[i][2]));
                 writer.write("\r\n");
             }
             writer.flush();
-        }
-
-        timeList.clear();
-        pACList.clear();
-        pBCList.clear();
-        pCCList.clear();
-        pAVList.clear();
-        pBVList.clear();
-        pCVList.clear();
-    }*/
-
-    public void createWriter(String Configuration) throws IOException {
-        writer = new BufferedWriter(new FileWriter(new File(pathToExportFile)));
-        if (Objects.equals(Configuration, "Токи")) {
-            writer.write("Время, с");
-            writer.write("; ");
-            writer.write("Ток фазы А, А");
-            writer.write("; ");
-            writer.write("Ток фазы В, А");
-            writer.write("; ");
-            writer.write("Ток фазы С, А");
-            writer.write("\r\n");
-        } else if (Objects.equals(Configuration, "Напряжения")) {
-            writer.write("Время, с");
-            writer.write("; ");
-            writer.write("Напряжение фазы А, В");
-            writer.write("; ");
-            writer.write("Напряжение фазы В, В");
-            writer.write("; ");
-            writer.write("Напряжение фазы С, В");
-            writer.write("\r\n");
-        } else if (Objects.equals(Configuration, "Токи и напряжения")) {
-            writer.write("Время, с");
-            writer.write("; ");
-            writer.write("Ток фазы А, А");
-            writer.write("; ");
-            writer.write("Ток фазы В, А");
-            writer.write("; ");
-            writer.write("Ток фазы С, А");
-            writer.write("; ");
-            writer.write("Напряжение фазы А, В");
-            writer.write("; ");
-            writer.write("Напряжение фазы В, В");
-            writer.write("; ");
-            writer.write("Напряжение фазы С, В");
-            writer.write("\r\n");
-        }
-
-    }
-
-    public void flushWriter() throws IOException {
-        writer.flush();
-    }
-
-    public void addLinesToWriter(String Configuration) throws IOException {
-        if (Objects.equals(Configuration, "Токи")) {
-                writer.write(String.valueOf(exportTime * 0.001f));
-                writer.write("; ");
-                writer.write(String.valueOf(modbusConnection.getOutputs()[3]));
-                writer.write("; ");
-                writer.write(String.valueOf(modbusConnection.getOutputs()[4]));
-                writer.write("; ");
-                writer.write(String.valueOf(modbusConnection.getOutputs()[5]));
-                writer.write("\r\n");
-        } else if (Objects.equals(Configuration, "Напряжения")) {
-            writer.write(String.valueOf(exportTime * 0.001f));
-            writer.write("; ");
-            writer.write(String.valueOf(modbusConnection.getOutputs()[0]));
-            writer.write("; ");
-            writer.write(String.valueOf(modbusConnection.getOutputs()[1]));
-            writer.write("; ");
-            writer.write(String.valueOf(modbusConnection.getOutputs()[2]));
-            writer.write("\r\n");
-        } else if (Objects.equals(Configuration, "Токи и напряжения")) {
-            writer.write(String.valueOf(exportTime * 0.001f));
-            writer.write("; ");
-            writer.write(String.valueOf(modbusConnection.getOutputs()[3]));
-            writer.write("; ");
-            writer.write(String.valueOf(modbusConnection.getOutputs()[4]));
-            writer.write("; ");
-            writer.write(String.valueOf(modbusConnection.getOutputs()[5]));
-            writer.write("; ");
-            writer.write(String.valueOf(exportTime * 0.001f));
-            writer.write("; ");
-            writer.write(String.valueOf(modbusConnection.getOutputs()[0]));
-            writer.write("; ");
-            writer.write(String.valueOf(modbusConnection.getOutputs()[1]));
-            writer.write("; ");
-            writer.write(String.valueOf(modbusConnection.getOutputs()[2]));
-            writer.write("\r\n");
         }
     }
 
