@@ -17,13 +17,11 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.util.Duration;
 import org.jetbrains.annotations.NotNull;
-
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+
 
 public class MainController {
 
@@ -68,6 +66,9 @@ public class MainController {
     private TextField actualParameterValue;
     @FXML
     private TextField newParametervalue;
+    @FXML
+    private TextField writingTime;
+    private int exportListLength;
     @FXML
     private Button connectButton;
     @FXML
@@ -136,6 +137,7 @@ public class MainController {
     private List<Float> voltagePhaseBExportList;
     private List<Float> voltagePhaseCExportList;
     private List<Float> timeExportList;
+    private int exportPointsCount;
 
     private List<Float[]> exportList;
 
@@ -167,6 +169,7 @@ public class MainController {
     public void initialize() {
         //Объект файла
         //BufferedWriter writer = new BufferedWriter(new FileWriter(new File(exportFileLocation.getText())));
+        exportPointsCount = 0;
         currentPhaseAExportList = new ArrayList<>();
         currentPhaseBExportList = new ArrayList<>();
         currentPhaseCExportList = new ArrayList<>();
@@ -311,7 +314,7 @@ public class MainController {
         new Thread(() -> {
             while (allowedToDisplayData & isExported.isSelected()) {
                 exportTime += interval;
-                //modbusConnection.readRegisters();
+                modbusConnection.readRegisters();
                 /*try {
                     addLinesToWriter(exportFileConfiguration);
                 } catch (IOException e) {
@@ -406,6 +409,13 @@ public class MainController {
         exportTime += interval * 0.001f;
     }*/
     public void saveExportParameters() {
+        if(Integer.parseInt(writingTime.getText()) <= 0 || interval == 0) {
+            exportListLength = 10;
+        } else {
+            exportListLength = Integer.parseInt(writingTime.getText()) / interval;
+        }
+        exportList = new ArrayList<>(exportListLength);
+
         exportFileConfiguration = exportConfigurationComboBox.getValue();
         pathToExportFile = exportFileLocation.getText();
 
