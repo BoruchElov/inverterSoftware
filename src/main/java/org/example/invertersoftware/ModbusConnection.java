@@ -42,7 +42,7 @@ public class ModbusConnection {
         scanRate = interval;
         slaveId = slaveID; // Укажите идентификатор устройства
         startAddress = 0;
-        quantityOfRegisters = 60;
+        quantityOfRegisters = 112;
     }
     public void connect() throws ModbusException {
         try {
@@ -78,8 +78,8 @@ public class ModbusConnection {
     public void updateControlSystemParameters() throws ModbusException {
         registers = modbusMaster.readMultipleRegisters(slaveId, startAddress, quantityOfRegisters);
 
-        controlSystemParameters[0] = Float.intBitsToFloat(numbersConnector(registers[25].getValue(), registers[24].getValue()));
-        controlSystemParameters[1] = Float.intBitsToFloat(numbersConnector(registers[27].getValue(), registers[26].getValue()));
+        controlSystemParameters[0] = Float.intBitsToFloat(numbersConnector(registers[11].getValue(), registers[10].getValue()));
+        controlSystemParameters[1] = Float.intBitsToFloat(numbersConnector(registers[7].getValue(), registers[6].getValue()));
         controlSystemParameters[2] = Float.intBitsToFloat(numbersConnector(registers[31].getValue(), registers[30].getValue()));
         controlSystemParameters[3] = Float.intBitsToFloat(numbersConnector(registers[33].getValue(), registers[32].getValue()));
     }
@@ -93,16 +93,16 @@ public class ModbusConnection {
                     //System.out.println("Registers " + (startAddress + i) + "-" + (startAddress + i + 1) + " = " + value);
 
                     // Запись значений в глобальный массив
-                    if (i == 34) outputs[0] = value;  // Пример для регистров 34-35
-                    if (i == 36) outputs[1] = value;  // Пример для регистров 36-37
-                    if (i == 38) outputs[2] = value;  // Пример для регистров 38-39
-                    if (i == 40) outputs[3] = value;  // Пример для регистров 40-41
-                    if (i == 42) outputs[4] = value;  // Пример для регистров 42-43
-                    if (i == 44) outputs[5] = value;  // Пример для регистров 44-45
+                    if (i == 80) outputs[0] = value;  // Пример для регистров 34-35
+                    if (i == 82) outputs[1] = value;  // Пример для регистров 36-37
+                    if (i == 84) outputs[2] = value;  // Пример для регистров 38-39
+                    if (i == 86) outputs[3] = value;  // Пример для регистров 40-41
+                    if (i == 88) outputs[4] = value;  // Пример для регистров 42-43
+                    if (i == 90) outputs[5] = value;  // Пример для регистров 44-45
                 }
             }
-            controlSystemParameters[0] = Float.intBitsToFloat(numbersConnector(registers[25].getValue(), registers[24].getValue()));
-            controlSystemParameters[1] = Float.intBitsToFloat(numbersConnector(registers[27].getValue(), registers[26].getValue()));
+            controlSystemParameters[0] = Float.intBitsToFloat(numbersConnector(registers[11].getValue(), registers[10].getValue()));
+            controlSystemParameters[1] = Float.intBitsToFloat(numbersConnector(registers[7].getValue(), registers[6].getValue()));
             controlSystemParameters[2] = Float.intBitsToFloat(numbersConnector(registers[31].getValue(), registers[30].getValue()));
             controlSystemParameters[3] = Float.intBitsToFloat(numbersConnector(registers[33].getValue(), registers[32].getValue()));
 
@@ -113,11 +113,11 @@ public class ModbusConnection {
     public void writeRegisters(int slave, int offset, String option, float setValue) throws ModbusException {
 
         if (Objects.equals(option, "Sbase")) {
-            storingRegisters[25].setValue(splitNumber(setValue)[1]);
-            storingRegisters[24].setValue(splitNumber(setValue)[0]);
+            storingRegisters[11].setValue(splitNumber(setValue)[1]);
+            storingRegisters[10].setValue(splitNumber(setValue)[0]);
         } else if (Objects.equals(option, "Vacbase")) {
-            storingRegisters[27].setValue(splitNumber(setValue)[1]);
-            storingRegisters[26].setValue(splitNumber(setValue)[0]);
+            storingRegisters[7].setValue(splitNumber(setValue)[1]);
+            storingRegisters[6].setValue(splitNumber(setValue)[0]);
         } else if (Objects.equals(option, "KpPLL")) {
             storingRegisters[31].setValue(splitNumber(setValue)[1]);
             storingRegisters[30].setValue(splitNumber(setValue)[0]);

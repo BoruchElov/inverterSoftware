@@ -391,7 +391,7 @@ public class MainController {
         if(Integer.parseInt(writingTime.getText()) <= 0 || interval == 0) {
             exportListLength = 10;
         } else {
-            exportListLength = Integer.parseInt(writingTime.getText()) / interval;
+            exportListLength = Integer.parseInt(writingTime.getText()) * 1000 / interval;
         }
         export = new float[exportListLength][6];
         time = new float[exportListLength];
@@ -401,7 +401,9 @@ public class MainController {
     }
 
     public void saveExportData(int position) {
-        export[position] = modbusConnection.getOutputs();
+        for (int i = 0; i < 6; i++) {
+            export[position][i] = modbusConnection.getOutputs()[i];
+        }
         time[position] = currentTime;
     }
 
