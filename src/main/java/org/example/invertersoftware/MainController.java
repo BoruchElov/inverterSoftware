@@ -18,14 +18,17 @@ import javafx.scene.input.MouseEvent;
 import javafx.util.Duration;
 import org.jetbrains.annotations.NotNull;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 
 public class MainController {
 
-
+    /**
+     * В данной части объявляются элементы графика: LineChart (непосредственно график), CategoryAxis (ось абсцисс),
+     * NumberAxis (ось ординат). Также здесь объявляется специальный тип данных, необходимый для построения графика -
+     * XYChart.Series, содержащий узлы с координатами по осям X и Y. Такой объект создаётся для всех величин, выводимых
+     * на график.
+     */
     @FXML
     private LineChart<String, Number> currentChart;
     @FXML
@@ -42,6 +45,19 @@ public class MainController {
 
     @FXML
     private NumberAxis voltageChartYAxis;
+    private XYChart.Series currentPhaseASeries;
+    private XYChart.Series currentPhaseBSeries;
+    private XYChart.Series currentPhaseCSeries;
+
+    private XYChart.Series voltagePhaseASeries;
+    private XYChart.Series voltagePhaseBSeries;
+    private XYChart.Series voltagePhaseCSeries;
+
+    /**
+     * В данном блоке кода объявляются элементы интерфейса, позволяющие пользователю задать параметры соединения с
+     * контроллером. Также здесь объявляются переменные, в которые записываются заданные пользователем значения данных
+     * параметров.
+     */
     @FXML
     private ComboBox<String> portComboBox;
     @FXML
@@ -62,6 +78,27 @@ public class MainController {
     private TextField slaveIdentificationNumber;
     @FXML
     private TextField retriesTextField;
+    private String port;
+    private int baudRate;
+    private int dataBits;
+    private String parity;
+    private int stopBits;
+    private int interval;
+    private int timeout;
+    private int retries;
+    private int slaveID;
+    /**
+     * В данной части кода объявляется объект кнопки connectButton, по нажатии которой пользователь устанавливает
+     * соединение с контроллером. Для установки соединения и осуществления дальнейших операций с контроллером
+     * объявляется объект типа ModbusConnection - modbusConnection
+     */
+    @FXML
+    private Button connectButton;
+    private ModbusConnection modbusConnection;
+    /**
+     *
+     */
+
     @FXML
     private TextField actualParameterValue;
     @FXML
@@ -69,8 +106,7 @@ public class MainController {
     @FXML
     private TextField writingTime;
     private int exportListLength;
-    @FXML
-    private Button connectButton;
+
     @FXML
     private Button getData;
     @FXML
@@ -90,8 +126,7 @@ public class MainController {
     private ObservableList<Voltages> voltagesData = FXCollections.observableArrayList();
 
     private float currentTime;
-    float[] outputsForTables;
-    float[] outputsForCharts;
+    float[] outputsForChartsAndTables;
     float[] outputs;
     private String exportFileConfiguration;
     private String pathToExportFile;
@@ -121,44 +156,18 @@ public class MainController {
     @FXML
     private Slider voltagesChartSlider;
     private BufferedWriter writer;
-
-    private XYChart.Series currentPhaseASeries;
-    private XYChart.Series currentPhaseBSeries;
-    private XYChart.Series currentPhaseCSeries;
-
-    private XYChart.Series voltagePhaseASeries;
-    private XYChart.Series voltagePhaseBSeries;
-    private XYChart.Series voltagePhaseCSeries;
-    
-    private List<Float> currentPhaseAExportList;
-    private List<Float> currentPhaseBExportList;
-    private List<Float> currentPhaseCExportList;
-    private List<Float> voltagePhaseAExportList;
-    private List<Float> voltagePhaseBExportList;
-    private List<Float> voltagePhaseCExportList;
-    private List<Float> timeExportList;
     private int exportPointsCount;
 
     private float[][] export;
     private float[] time;
 
-    private String filePath;
-
     private boolean isRunning = false;
     private boolean allowedToDisplayData = false;
-    private ModbusConnection modbusConnection;
+
 
     private boolean allowedToExportData = false;
 
-    private String port;
-    private int baudRate;
-    private int dataBits;
-    private String parity;
-    private int stopBits;
-    private int interval;
-    private int timeout;
-    private int retries;
-    private int slaveID;
+
     private int lineChartInterval;
 
     private float exportTime;
@@ -168,16 +177,7 @@ public class MainController {
      */
     @FXML
     public void initialize() {
-        //Объект файла
-        //BufferedWriter writer = new BufferedWriter(new FileWriter(new File(exportFileLocation.getText())));
         exportPointsCount = 0;
-        currentPhaseAExportList = new ArrayList<>();
-        currentPhaseBExportList = new ArrayList<>();
-        currentPhaseCExportList = new ArrayList<>();
-        voltagePhaseAExportList = new ArrayList<>();
-        voltagePhaseBExportList = new ArrayList<>();
-        voltagePhaseCExportList = new ArrayList<>();
-        timeExportList = new ArrayList<>();
 
         currentChart.setCreateSymbols(false);
         currentChart.getXAxis().setAnimated(false);
@@ -272,7 +272,7 @@ public class MainController {
      * If there is no connection method throws an exception.
      */
     @FXML
-    private void onGetDataButtonClick() throws IOException {
+    private void onGetDataButtonClick() {
 
         if(isExported.isSelected()) {
             saveExportParameters();
@@ -322,11 +322,6 @@ public class MainController {
                     saveExportData(exportPointsCount);
                     exportPointsCount++;
                 }
-                /*try {
-                    addLinesToWriter(exportFileConfiguration);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }*/
                 try {
                     Thread.sleep(interval);
                 } catch (InterruptedException e) {
@@ -339,34 +334,33 @@ public class MainController {
             while (allowedToDisplayData) {
                 currentTime += lineChartInterval * 0.001f;
                 displayOutputs();
-                plotOutPuts();
                 try {
                     Thread.sleep(lineChartInterval);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
                 Platform.runLater(() -> {
-                    voltagePhaseASeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputsForCharts[0]));
+                    voltagePhaseASeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputsForChartsAndTables[0]));
                     if (voltagePhaseASeries.getData().size() > 50) {
                         voltagePhaseASeries.getData().remove(0);
                     }
-                    voltagePhaseBSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputsForCharts[1]));
+                    voltagePhaseBSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputsForChartsAndTables[1]));
                     if (voltagePhaseBSeries.getData().size() > 50) {
                         voltagePhaseBSeries.getData().remove(0);
                     }
-                    voltagePhaseCSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputsForCharts[2]));
+                    voltagePhaseCSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputsForChartsAndTables[2]));
                     if (voltagePhaseCSeries.getData().size() > 50) {
                         voltagePhaseCSeries.getData().remove(0);
                     }
-                    currentPhaseASeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputsForCharts[3]));
+                    currentPhaseASeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputsForChartsAndTables[3]));
                     if (currentPhaseASeries.getData().size() > 50) {
                         currentPhaseASeries.getData().remove(0);
                     }
-                    currentPhaseBSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputsForCharts[4]));
+                    currentPhaseBSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputsForChartsAndTables[4]));
                     if (currentPhaseBSeries.getData().size() > 50) {
                         currentPhaseBSeries.getData().remove(0);
                     }
-                    currentPhaseCSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputsForCharts[5]));
+                    currentPhaseCSeries.getData().add(new XYChart.Data<>(String.format("%.3f", currentTime), outputsForChartsAndTables[5]));
                     if (currentPhaseCSeries.getData().size() > 50) {
                         currentPhaseCSeries.getData().remove(0);
                     }
@@ -521,24 +515,25 @@ public class MainController {
 
 
     /**
-     * Method displayOutputs() gets the value obtained through readMultipleRegisters request and puts it in the tables
-     */
+     * Метод displayOutputs() необходим для отображения данных в таблицах.
+     * В начале он записывает данные, полученные от контроллера, в таблицу, используя массив outputsForTables и метод
+     * getOutputs() класса modbusConnection. Затем удаляет последний элемент списка значений токов и записывает в него
+     * новые, беря, соответственно, 3, 4 и 5 элементы из массива outputsForTables.
+     * Для напряжений действия аналогичные, но берутся элементы 0,1 и 2.
+     * В конце данный метод помещает актуальные значения в таблицы.
+     **/
 
     public void displayOutputs() {
-        outputsForTables = modbusConnection.getOutputs();
+        outputsForChartsAndTables = modbusConnection.getOutputs();
 
         currentsData.removeLast();
-        currentsData.add(new Currents(outputsForTables[3], outputsForTables[4], outputsForTables[5]));
+        currentsData.add(new Currents(outputsForChartsAndTables[3], outputsForChartsAndTables[4], outputsForChartsAndTables[5]));
 
         voltagesData.removeLast();
-        voltagesData.add(new Voltages(outputsForTables[0], outputsForTables[1], outputsForTables[2]));
+        voltagesData.add(new Voltages(outputsForChartsAndTables[0], outputsForChartsAndTables[1], outputsForChartsAndTables[2]));
 
         currentsTable.setItems(currentsData);
         voltagesTable.setItems(voltagesData);
-    }
-
-    public void plotOutPuts() {
-        outputsForCharts = modbusConnection.getOutputs();
     }
 
     public void turnElementOff(@NotNull Node element) {
