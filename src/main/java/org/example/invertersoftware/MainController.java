@@ -215,7 +215,7 @@ public class MainController {
         currentsTable.setItems(currentsData);
         voltagesTable.setItems(voltagesData);
 
-        intervalComboBox.getItems().addAll(10, 100, 1000);
+        intervalComboBox.getItems().addAll(50, 100, 500, 1000);
         exportConfigurationComboBox.getItems().addAll("Токи", "Напряжения", "Токи и напряжения");
         exportConfigurationComboBox.setValue("Токи");
 
@@ -452,7 +452,9 @@ public class MainController {
         }
         exportTime = 0;
         exportPointsCount = 0;
-        writeToTxt(exportFileConfiguration);
+        if (isExported.isSelected()) {
+            writeToTxt(exportFileConfiguration);
+        }
     }
 
     /**
