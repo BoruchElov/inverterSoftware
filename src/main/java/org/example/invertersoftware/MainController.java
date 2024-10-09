@@ -215,7 +215,7 @@ public class MainController {
         currentsTable.setItems(currentsData);
         voltagesTable.setItems(voltagesData);
 
-        intervalComboBox.getItems().addAll(1, 10, 100, 1000);
+        intervalComboBox.getItems().addAll(10, 100, 1000);
         exportConfigurationComboBox.getItems().addAll("Токи", "Напряжения", "Токи и напряжения");
         exportConfigurationComboBox.setValue("Токи");
 
@@ -274,11 +274,14 @@ public class MainController {
     @FXML
     private void onGetDataButtonClick() {
 
+        turnElementOff(stopGettingData);
+
         if(isExported.isSelected()) {
             saveExportParameters();
+        } else {
+            turnElementOn(stopGettingData);
         }
 
-        turnElementOn(stopGettingData);
         turnElementOff(exportConfigurationComboBox);
         turnElementOff(exportFileLocation);
         turnElementOff(exportApplyButton);
@@ -313,14 +316,23 @@ public class MainController {
             voltageChart.getData().add(voltagePhaseCSeries);
         }
         new Thread(() -> {
-            while (allowedToDisplayData & isExported.isSelected()) {
-                exportTime += interval;
+            while (allowedToDisplayData) {
                 modbusConnection.readRegisters();
-                saveExportData(exportPointsCount);
-                exportPointsCount++;
+                try {
+                    Thread.sleep(interval);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }).start();
+        new Thread(() -> {
+            while (allowedToDisplayData & isExported.isSelected()) {
                 if (exportPointsCount < exportListLength) {
                     saveExportData(exportPointsCount);
                     exportPointsCount++;
+                    exportTime += interval * 0.001f;
+                } else {
+                    turnElementOn(stopGettingData);
                 }
                 try {
                     Thread.sleep(interval);
@@ -404,7 +416,7 @@ public class MainController {
         for (int i = 0; i < 6; i++) {
             export[position][i] = modbusConnection.getOutputs()[i];
         }
-        time[position] = currentTime;
+        time[position] = exportTime;
     }
 
     /**
@@ -546,6 +558,7 @@ public class MainController {
         element.setDisable(false);
     }
     public void writeToTxt (String Configuration) throws IOException{
+        writer = new BufferedWriter(new FileWriter(new File(pathToExportFile)));
         if (Objects.equals(Configuration, "Токи")) {
             writer.write("Время, с");
             writer.write("; ");
